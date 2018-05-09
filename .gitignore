@@ -1,0 +1,6 @@
+.idea/
+.DS_Store
+
+# golang
+bin/
+pkg/
