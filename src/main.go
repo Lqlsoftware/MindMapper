@@ -1,0 +1,5 @@
+package mindmapper
+
+func main()  {
+	
+}
