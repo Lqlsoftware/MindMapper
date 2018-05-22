@@ -4,10 +4,14 @@ import (
 	"fmt"
 
 	"github.com/Lqlsoftware/mindmapper/src/model"
+	"github.com/astaxie/beego"
 	"github.com/sergi/go-diff/diffmatchpatch"
 )
 
 func main() {
+	bindRouter()
+	beego.Run()
+
 	t1 := model.MindMapper{
 		Tree:	make(map[string]model.MapperNode),
 		Hash:	"",
