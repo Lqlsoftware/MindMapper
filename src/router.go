@@ -1,10 +1,10 @@
 package main
 
 import (
-	"github.com/Lqlsoftware/mindmapper/src/handler"
 	"github.com/astaxie/beego"
+	"./handler"
 )
 
 func bindRouter() {
-	beego.Router("/", &handler.LoginController{})
+	beego.Router("/login", &handler.LoginController{})
 }

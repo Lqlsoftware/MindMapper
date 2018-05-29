@@ -1,12 +1,12 @@
-package main
+package database
 
 import (
 	"log"
 
-	"./config"
-	"./model"
-	"./model/Tree"
-	"./model/git"
+	"../config"
+	"../model"
+	"../model/Tree"
+	"../model/git"
 	"gopkg.in/mgo.v2"
 )
 

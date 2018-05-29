@@ -11,3 +11,6 @@ type User struct {
 	State		uint8
 }
 
+func VaildUser(username, password string) (User, error) {
+
+}

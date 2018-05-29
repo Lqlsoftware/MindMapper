@@ -1,19 +1,29 @@
 package handler
 
-import "github.com/astaxie/beego"
+import (
+	"github.com/astaxie/beego"
+	"../model"
+)
 
 type LoginController struct {
 	beego.Controller
 }
 
-<<<<<<< HEAD
 func (this *LoginController) POST() {
-	username := this.GetStrings("username")
-	password := this.GetStrings("password")
+	username := this.GetString("username")
+	password := this.GetString("password")
 
+	user, err := model.VaildUser(username, password)
+	if err != nil {
+		//
+		this.Ctx.WriteString("faild")
+	}
 
-=======
-func (this *LoginController) Get() {
->>>>>>> 758e9a85b04aff84e5a32f825f4d8ac01b320c5f
-	this.Ctx.WriteString("hello world")
+	this.SetSession("user", user)
+
+	this.Ctx.WriteString("success")
+
+	//if this.GetSession("user") == nil {
+	//
+	//}
 }
