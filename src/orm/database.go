@@ -5,16 +5,11 @@ import (
 	"gopkg.in/mgo.v2"
 )
 
-type Database struct {
-	session	*mgo.Session
-	Db		*mgo.Database
+func GetDatabase() *mgo.Database {
+	return ORM.Copy().DB(config.DB_NAME)
 }
 
-func (orm *Database)GetSession() *mgo.Session {
-	return orm.session.Copy()
-}
-
-var ORM *Database
+var ORM *mgo.Session
 
 func InitDB () {
 	// Connect mongodb
@@ -26,12 +21,6 @@ func InitDB () {
 	// Switch the session to a monotonic behavior.
 	session.SetMode(mgo.Monotonic, true)
 
-	// Get DB pointer
-	Db := session.DB(config.DB_NAME)
-
 	// Set globe variable
-	ORM = &Database{
-		session: 	session,
-		Db:			Db,
-	}
+	ORM = session
 }

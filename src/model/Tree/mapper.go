@@ -46,6 +46,14 @@ func (mindMapper *MindMapperTree)ToJson() (string,error) {
 	return string(res),err
 }
 
+func (mindMapper *MindMapperTree)addNode(Node *TreeNode) {
+	mindMapper.Tree[Node.Idx] = *Node
+}
+
+func (mindMapper *MindMapperTree)updateHash() {
+	mindMapper.Hash = "0"
+}
+
 func (mindMapper *MindMapperTree)DiffWith(other *MindMapperTree) MapperDiff {
 	engine := diffmatchpatch.New()
 	Diffs := MapperDiff{[]MapperNodeDiff{}}
@@ -83,4 +91,11 @@ func (mindMapper *MindMapperTree)DiffWith(other *MindMapperTree) MapperDiff {
 		}
 	}
 	return Diffs
+}
+
+func (mindMapper *MindMapperTree)MergeFrom(Diff MapperDiff) {
+	for _, add := range Diff.Nodes {
+		mindMapper.addNode(add.Node)
+	}
+	mindMapper.updateHash()
 }
