@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <script src="js/jquery.js"></script>
+	<script src="js/raphael.js"></script>
+	<link rel="stylesheet" href="/css/font-awesome.min.css">
+	
+	<title>思维导图</title>
+	
+	<link rel="stylesheet" href="css/main.css">
+</head>
+
+<body>
+<link href="/css/nouislider.min.css" rel="stylesheet">
+<script src="/js/vue.min.js"></script>
+<script src="/js/nouislider.min.js"></script>
+<div class="map" id="">
+<div><svg id="svg" version="1.2" baseProfile="tiny" style="min-height: 0px; min-width: 0px;">
+<desc>Created with Snap</desc>
+<defs></defs>
+<g transform="matrix(0.28761061946902655, 0, 0, 0.28761061946902655, 0, 22.86504424778761)">
+<g transform="matrix(1, 0, 0, 1, 174, 123)" style="visibility: visible;"></g>
+</g>
+</svg></div><div class="preview-window" style="transform: matrix(1, 0, 0, 1, -373.118, 35.6291); width: 941.551px; height: 108.376px;"></div></div>
+</body>
+
+<script>
+	var nodeList = [];
+	var globalIndex = 0;
+	//存储每个节点对象
+	var node = function(parent) {
+		//节点序号
+		this.index = 0;
+		//节点坐标
+		this.x = 0;
+		this.y = 0;
+		//节点父亲
+		this.parent = parent;
+		//初始化孩子数量
+		this.childrenNum = 0;
+		//设置节点序号
+		this.setIndex = function(index) {
+			this.index = index;
+		}
+		//设置节点位置
+		this.setNode = function(x,y) {
+			this.x = x;
+			this.y = y;
+			//添加节点
+			$('body').append('<div class="plus" style="left:'+x+'px;top:'+y+'px" onclick="addChild('+this.index+')">'+'+'+'</div>');
+		}
+		//添加孩子
+		this.addChild = function() {
+			//绘制曲线
+			//x1,y1为起始点；x2为贝塞尔曲线横坐标中间点;x3为贝塞尔曲线横坐标终点,x4为直线横坐标终点,y2为线条终点
+			x1 = this.x;
+			y1 = this.y;
+			var x2 = x1 + 10;
+			var x3 = x2 + 10;
+			var	x4 = x3 + 60;
+			var y2;
+			var currentChildrenNum = this.childrenNum;
+			if (currentChildrenNum % 2 == 0) {
+				y2 = y1 - (currentChildrenNum / 2) * 40 - 20;
+			}
+			else 
+				y2 = y1 + (currentChildrenNum / 2) * 40;
+			raphael.path('M'+x1+','+y1+' Q'+x2+','+y2+' '+x3+','+y2).attr('stroke','red');
+			
+			raphael.path('M'+x3+','+y2+' '+'L'+x4+','+y2).attr('stroke','red');
+			//创建新的孩子并添加到节点集中
+			var newNode = new node(this);
+			newNode.setIndex(globalIndex);
+			nodeList.push(newNode);
+			globalIndex++;
+			newNode.setNode(x4,y2);
+			this.childrenNum += 1;
+		}
+		// this.updatePositionUp = function() {
+		// 	this.paper.remove();
+		// }
+	}
+
+	var raphael;
+	//初始化图形
+	window.onload = function() {
+		raphael = new Raphael(10,10,1000,1000);
+		raphael.path('M40,400 L120,400').attr('stroke','#abc');
+		//var rec = raphael.rect(40,350,40,20);
+		var myRoot = new node(null);
+		myRoot.setIndex(0);
+		nodeList.push(myRoot);
+		globalIndex++;
+		myRoot.setNode(120,400);
+	}
+
+	addChild = function(index) {
+		nodeList[index].addChild();
+	}
+
+	update = function(index) {
+		nodeList[index].updatePositionUp();
+	}
+
+	/*function draw() {
+        var canvas=document.getElementsByTagName('svg');
+        var context=canvas.getContext('2d');
+         //绘制起始点、控制点、终点  
+          context.beginPath();  
+          context.moveTo(20,170);  
+          context.lineTo(130,40);  
+          context.lineTo(180,150);    
+          context.stroke();            
+
+          //绘制2次贝塞尔曲线  
+          context.beginPath();  
+          context.moveTo(20,170);  
+          context.quadraticCurveTo(130,40,180,150); 
+          context.strokeStyle = "red"; 
+          context.stroke();          
+	}*/
+
+	$('body').click(function() {
+		draw();
+	})
+</script>

@@ -1,0 +1,23 @@
+path {
+	stroke-width: 4px;
+}
+
+.plus { position: absolute;
+		background: #66ccff;
+		color: #fff; 
+		border-radius: 50%; 
+		width: 20px; 
+		height: 20px;
+		font-size: 16px; 
+		text-align: center; 
+		line-height: 20px;
+		cursor: pointer;
+}
+
+.text {
+	border: none;
+	width: 65px;
+	position: absolute;
+	text-align: right;
+	background: rgba(0,0,0,0);
+}
