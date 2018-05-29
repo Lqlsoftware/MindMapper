@@ -1,4 +1,4 @@
-package model
+package Tree
 
 import (
 	"encoding/json"
@@ -14,7 +14,7 @@ import (
 	Rank	: string	当前父亲中的排名
 	Value 	: string   	节点文字内容
  */
-type MapperNode struct {
+type TreeNode struct {
 	Idx		string
 	Father	string
 	Rank	string
@@ -36,17 +36,17 @@ type MapperNode struct {
     |  Idx: string |      MapperNode      |
 	·-------------------------------------·
  */
-type MindMapper struct {
-	Tree	map[string]MapperNode
+type MindMapperTree struct {
+	Tree	map[string]TreeNode
 	Hash	string
 }
 
-func (mindMapper *MindMapper)ToJson() (string,error) {
+func (mindMapper *MindMapperTree)ToJson() (string,error) {
 	res,err := json.Marshal(*mindMapper)
 	return string(res),err
 }
 
-func (mindMapper *MindMapper)DiffWith(other *MindMapper) MapperDiff {
+func (mindMapper *MindMapperTree)DiffWith(other *MindMapperTree) MapperDiff {
 	engine := diffmatchpatch.New()
 	Diffs := MapperDiff{[]MapperNodeDiff{}}
 	for _,curr := range mindMapper.Tree {

@@ -1,5 +1,6 @@
 package main
 
+<<<<<<< HEAD
 import (
 	"github.com/astaxie/beego"
 )
@@ -14,6 +15,15 @@ type MainController struct {
 func main() {
 	beego.Router("/login", &LoginController{})
 	beego.Run()
+=======
+import "github.com/astaxie/beego"
+
+func main() {
+	bindRouter()
+	beego.Run()
+
+	//
+>>>>>>> 758e9a85b04aff84e5a32f825f4d8ac01b320c5f
 	//t1 := model.MindMapper{
 	//	Tree:	make(map[string]model.MapperNode),
 	//	Hash:	"",
@@ -35,6 +45,9 @@ func main() {
 	//
 	//fmt.Println(t1.ToJson())
 	//
+<<<<<<< HEAD
 	//
+=======
+>>>>>>> 758e9a85b04aff84e5a32f825f4d8ac01b320c5f
 	//fmt.Println(diff.ToJson())
 }

@@ -1,4 +1,4 @@
-package model
+package Tree
 
 import (
 	"encoding/json"
@@ -34,7 +34,7 @@ func (operate MapperNodeOperate)String() string {
 	Different	: []Diff				字符差异
  */
 type MapperNodeDiff struct {
-	Node	 	*MapperNode
+	Node	 	*TreeNode
 	Operate		MapperNodeOperate
 	Different	[]diffmatchpatch.Diff
 }
