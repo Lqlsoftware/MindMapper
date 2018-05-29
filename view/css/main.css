@@ -1,3 +1,8 @@
+<<<<<<< HEAD
+=======
+body {margin: 0;}
+
+>>>>>>> dev
 path {
 	stroke-width: 4px;
 }
@@ -16,8 +21,31 @@ path {
 
 .text {
 	border: none;
+<<<<<<< HEAD
 	width: 65px;
 	position: absolute;
 	text-align: right;
 	background: rgba(0,0,0,0);
+=======
+	position: absolute;
+	text-align: right;
+	background: rgba(0,0,0,0);
+	font-family: Consolas;
+}
+
+.active {border: 1px solid #66ccff}
+
+.dot {
+	background: #eee;
+	border-radius: 50%; 
+	width: 5px; 
+	height: 5px;
+	position: absolute;
+}
+
+.header {
+	width: 100%;
+	height: 45px;
+	background: #000;
+>>>>>>> dev
 }

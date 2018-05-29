@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <script src="js/jquery.js"></script>
+	<script src="js/raphael.js"></script>
+	<title>思维导图</title>
+	<link rel="stylesheet" href="css/main.css">
+</head>
+
+<body>
+	<div class="header"></div>
+	<img src="img/back.svg" width="24" class="back">
+	<img src="img/right.svg" width="24">
+	<img src="img/apps.svg" width="24">
+</body>
+
+<script>
+	//初始化根节点->点击(添加孩子)->addChild()->calcSpace()->updateLocation()->rePaint()->subRePaint()
+	//->paintCurve()->setNode()->putText()
+
+	var nodeList = [];
+	var globalIndex = 0;
+	/////////////////////////////
+	//每个节点都是一个对象，设置类//
+	/////////////////////////////
+	var node = function(parent) {
+		//节点序号
+		this.index = 0;
+		//节点坐标
+		this.x = 0;
+		this.y = 0;
+		//节点上下距离限
+		this.up = 20;
+		this.down = 20;
+		//节点在树中的层数
+		this.depth = 0;
+		//节点父亲
+		this.parent = parent;
+		//节点兄长
+		this.prebro = null;
+		//节点孩子
+		this.children = [];
+		//设置节点连接的边
+		this.edge = [];
+		this.edgeNum = 0;
+		//节点文字
+		this.text = null;
+		//节点点击
+		this.click = false;
+		//文字设置于提取
+		this.setText = function(text) {
+			this.text = text;
+		}
+		//设置节点高度
+		this.setHeight = function(y) {
+			this.y = y;
+		}
+		//设置节点序号
+		this.setIndex = function(index) {
+			this.index = index;
+		}
+		//设置节点上下距离限
+		this.setDistance = function(up,down) {
+			this.up = up;
+			this.down = down;
+		}
+		//设置节点所在层数
+		this.setDepth = function(depth) {
+			this.depth = depth;
+		}
+		//设置节点位置
+		this.setNode = function(x,y) {
+			this.x = x;
+			this.y = y;
+			//添加节点
+			$('body').append('<div class="plus" style="left:'+x+'px;top:'+y+'px" onclick="addChild('+this.index+')">'+'+'+'</div>');
+		}
+		//设置兄长
+		this.setPreBro = function(bro) {
+			this.prebro = bro;
+		}
+		//添加孩子
+		this.addChild = function(option) {
+			//创建新的孩子并添加到节点集中
+			var newNode = new node(this);
+			newNode.setIndex(globalIndex);
+			console.log('addChild '+newNode.index);
+			nodeList.push(newNode);
+			this.children.push(newNode);
+			globalIndex++;
+			newNode.setDepth(this.depth+1);
+			if (this.edgeNum > 0)
+				newNode.setPreBro(this.children[this.edgeNum-1]);
+			this.edgeNum += 1;
+			//如果通过图操作改变了模型树的状态，还需要改变链表的状态
+			if (option == 0) {
+				optionList.remove(optionList.currentNode);
+				optionList.append(1,newNode);
+				optionList.currentNode = optionList.currentNode.next;
+			}
+			calcSpace(nodeList[0]);
+			updateLocation(nodeList[0]);
+			print();
+			rePaint();
+		}
+		//删除孩子 ---- option: 0表示通过delete删除，1表示通过前进后退删除
+		this.deleteNode = function(option) {
+			var parent = this.parent;
+			var index = this.index;
+			var howOldIm;
+			//获取到该节点是父亲的第howOldIm个孩子
+			for (var k = 0; k < parent.edgeNum; k++) 
+				if (parent.children[k].index == index){
+					howOldIm = k;
+					break;
+				}
+			console.log(howOldIm);
+			if (howOldIm == 0 && parent.edgeNum > 1) 
+				parent.children[1].setPreBro(null);
+			else if (howOldIm != parent.edgeNum - 1)
+				parent.children[howOldIm+1].setPreBro(parent.children[howOldIm-1]);
+			//从线性数组中删除节点以及其孩子
+			for (var i = 0; i < nodeList.length; i++)
+				if (nodeList[i].index == index) {
+					deleteSubTree(index);
+				}
+			//从父亲的孩子列表中删除节点
+			console.log('edgeNum '+parent.edgeNum);
+			for (var j = 0; j < parent.edgeNum; j++)
+				if (parent.children[j].index == index) {
+					parent.children.splice(j,1);
+					break;
+				}
+			parent.edgeNum -= 1;
+			delete this;
+			//如果通过图操作改变了模型树的状态，还需要改变链表的状态
+			if (option == 0) {
+				optionList.remove(optionList.currentNode);
+				optionList.append(2,this);
+				optionList.currentNode = optionList.currentNode.next;
+			}
+			//console.log(nodeList);
+			calcSpace(nodeList[0]);
+			updateLocation(nodeList[0]);
+			print();
+			rePaint();
+		}
+
+		//绘制曲线，输出文字
+		this.paintCurve = function(newNode,index,y2) {
+			//获取文字所占长度
+			if (this.children[index].text != null)
+				var len = this.children[index].text.length;
+			else len = 0;
+			//绘制曲线
+			//x1,y1为起始点；x2为贝塞尔曲线横坐标中间点;x3为贝塞尔曲线横坐标终点,x4为直线横坐标终点,y2为线条终点
+			var x1 = this.x;
+			var y1 = this.y;
+			var x2 = x1 + 10;
+			var x3 = x2 + 10;
+			var	x4 = x3 + 80;
+			if (len > 5)
+				x4 = x3 + len*15;
+			//r标识边对应的节点的index
+			//edge[index]中的index是父亲的第index个孩子
+			this.edge[index] = raphael.path('M'+x1+','+eval(y1-70)+' Q'+x2+','+eval(y2-70)+' '+x3+','+eval(y2-70)+' '+'L'+x4+','+eval(y2-70)).attr({'stroke':'red','r':newNode.index,'rx':0});
+			//点击激活事件
+			this.edge[index].click(active);
+			newNode.setNode(x4,y2);
+			newNode.putText(newNode.text,len);
+			$('input').eq(newNode.index).val(newNode.text);
+		}
+
+		//放置input
+		this.putText = function(content,len) {
+			var x = this.x - 70;
+			var y = this.y - 15;
+			if (content == null)
+				content = "";
+			var width = 68;
+			if (len > 5 ) {
+				width = len * 15;
+				x = this.x - width;
+			}
+			$('body').append('<input id="'+this.index+'" class="text" style="left:'+x+'px;top:'+y+'px;width:'+width+'px;" placeholder="text" onblur="getText('+this.index+')" value="'+content+'">');
+		}
+	}
+
+	//定义一个双向链表,用于存储树的操作状态，用于撤销和前进
+	//链表节点,存储用户的操作
+	//option -----  0：无操作 1：增加  2：删除  3：移动
+	var listnode = function(option,node) {
+		//操作,如增加删除
+		this.option = option;
+		//操作对象,模型树节点
+		this.node = node;
+		this.next = null;
+		this.prev = null;
+	}
+	//链操作
+	var Llist = function() {
+		//初始化链表头
+		this.head = null;
+		//链表当前节点
+		this.currentNode = null;
+		//在链表尾插入新的操作
+		this.append = function(option,node) {
+			var newListnode = new listnode(option,node);
+			var currNode = this.findLast();
+			newListnode.next = null;
+			newListnode.prev = currNode;
+			currNode.next = newListnode;
+		}
+		//删除链表指定位置以后所有元素的操作
+		this.remove = function(listnode) {
+			var currNode = this.find(listnode);
+		    currNode.next = null;
+		}
+		//在链表中查找到对应位置的节点
+		this.find = function(listnode){
+		    var currNode = this.head;
+		    while (currNode != listnode){
+		        currNode = currNode.next;
+		    }
+		    return currNode;
+		}
+		//查找链表尾节点
+		this.findLast = function() {
+			var currNode = this.head;
+		    while (!(currNode.next == null)){
+		        currNode = currNode.next;
+		    }
+		    return currNode;
+		}
+	}
+
+	var optionList = new Llist();
+
+	//边的点击激活函数
+	var active = function(e) {
+		event.stopImmediatePropagation();
+		this.attr('stroke','pink');
+		//rx用作点击判断，选中为1，未选中为0
+		this.attr('rx',1);
+		var index = this.attr('r');
+		console.log('active '+index);
+		var edge = this;
+		$('body').click(function() {
+			rePaint();
+			edge.attr('rx',0);
+		})
+		//点击delete删除对应节点
+		$(document).keydown(function(event) {
+			if (event.keyCode == 46 && edge.attr('rx') == 1) {
+				for (var i = 0; i < nodeList.length; i++) {
+					if (nodeList[i].index == index) {
+						nodeList[i].deleteNode(0);
+						break;
+					}
+				}
+			}
+		})
+	}
+
+	//递归删除子树所有的孩子
+	var deleteSubTree = function(index) {
+		var currentNode;
+		for (var i = 0; i < nodeList.length; i++)
+			if (nodeList[i].index == index) {
+				currentNode = nodeList[i];
+				break;
+			}
+		for (var j = 0; j < currentNode.edgeNum; j++) {
+			deleteSubTree(currentNode.children[j].index);
+		}
+		for (var k = 0; k < nodeList.length; k++)
+			if (nodeList[k].index == index) {
+				nodeList.splice(k,1);
+				break;
+			}
+	}
+
+	//递归计算n叉树上下距离限
+	var calcSpace = function(root) {
+		if (root == null) 
+			return null;
+		else if (root.edgeNum == 0)
+			return root;
+		else {
+			for (var i = 0; i < root.edgeNum; i++) {
+				calcSpace(root.children[i]);
+			}
+			//上下距离限临时变量
+			var up = 0;
+			var down = 0;
+			//len表示子树总高度
+			var len = 0;
+			//current表示逐渐添加孩子时子树的高度
+			var current = 0;
+			//node表示比父节点高的序号最大的孩子（出生最晚）
+			var node = 0;
+			//如果只有一个孩子，直接计算其上下距离限
+			if (root.edgeNum == 1) {
+				up = 20 + root.children[0].up;
+				down = root.children[0].down>40?root.children[0].down - 20:20;
+			}
+			else {
+				//计算子树全高
+				for (var i = 0; i < root.edgeNum; i++) {
+					len += root.children[i].up + root.children[i].down;
+				}
+				//找到临界点（第一个下界越过平均值的点）
+				for (var i = 0; i < root.edgeNum; i++) {
+					current += root.children[i].up + root.children[i].down;
+					if (current >= len/2) {
+						node = i;
+						break;
+					}
+				}
+				//由于第一个孩子位置固定，所以进行特殊处理
+				//如果这个临界点本身在平均值下，则更改临界点为其兄长,对大屁股临界孩子做了特殊处理ε=( o｀ω′)ノ
+				if ((current - root.children[node].down + 20 > len/2 || root.children[node].down > len/2) && node != 0 ) {
+					node = node - 1;
+				}
+				console.log('父节点：'+root.index+' 临界点：'+node);
+				//计算上下距离限
+				for (var i = 0; i < node; i++) 
+					up += root.children[i].up + root.children[i].down;
+				up += root.children[node].up + 20;
+				for (var i = node+1; i < root.edgeNum;i++) 
+					down += root.children[i].up + root.children[i].down;
+				down += root.children[node].down - 20;
+			}
+			root.setDistance(up,down);
+		}
+		return root;
+	}
+
+	//更新位置信息
+	var updateLocation = function(root) {
+		if (root == null) 
+			return null;
+		else if (root.edgeNum == 0) 
+			return root;
+		else {
+			//len表示子树总高度
+			var len = 0;
+			//current表示逐渐添加孩子时子树的高度
+			var current = 0;
+			//node表示比父节点高的序号最大的孩子（出生最晚）
+			var node = 0;
+			//计算子树全高
+			for (var i = 0; i < root.edgeNum; i++) {
+				len += root.children[i].up + root.children[i].down;
+			}
+			//找到临界点（第一个下界越过平均值的点）
+			for (var i = 0; i < root.edgeNum; i++) {
+				current += root.children[i].up + root.children[i].down;
+				if (current >= len/2) {
+					node = i;
+					break;
+				}
+			}
+			//如果这个临界点本身在平均值下，则更改临界点为其兄长
+			if ((current - root.children[node].down + 20 > len/2 || root.children[node].down > len/2) && node != 0 ) {
+				node = node - 1;
+			}
+			for (var i = 0; i < root.edgeNum; i++) {
+				//如果该节点没有兄长，确定第一个孩子相对自己的高度
+				if (root.prebro == null && i == 0) {
+					var diff = 0;
+					//如果只有一个孩子，则比根节点高20
+					if (root.edgeNum == 1)
+						root.children[0].setHeight(root.y - 20);
+					//如果不只一个孩子，根据临界点位置确定孩子高度
+					else {
+						if (node > 0) {
+							diff += root.children[0].down; 
+							for (var j = 1; j < node; j++)
+								diff += root.children[j].up + root.children[j].down;
+							diff += root.children[node].up;
+						}
+						diff += 20;
+						root.children[0].setHeight(root.y - diff);
+					}
+				}
+				//如果该节点有兄长，确定第一个孩子相对自己的高度
+				else if (i == 0)
+					root.children[0].setHeight(root.prebro.y + root.prebro.down + root.children[0].up);
+				//如果该节点不是第一个孩子，根据上一个孩子确定自己的高度
+				else {
+					root.children[i].setHeight(root.children[i-1].y + root.children[i-1].down + root.children[i].up);
+				}
+				updateLocation(root.children[i]);
+			}
+		}
+	}
+
+	//绘制子图
+	var subRePaint = function(root) {
+		if (root == null) 
+			return null;
+		else if (root.edgeNum == null)
+			return root;
+		else {
+			for (var i = 0; i < root.edgeNum; i++) {
+				root.paintCurve(root.children[i],i,root.children[i].y);
+				subRePaint(root.children[i]);
+			}
+		}
+	}
+
+	//重绘画布
+	var rePaint = function() {
+		//清空画布
+		raphael.clear();
+		$('.plus').remove();
+		$('input').remove();
+		//初始化绘制
+		raphael.path('M40,400 L120,400').attr('stroke','#abc');
+		nodeList[0].setNode(120,470);
+		//绘制非根节点
+		subRePaint(nodeList[0]);
+	}
+
+	//打印计算结果，用于测试
+	var print = function() {
+		for (var i = 0; i < nodeList.length; i++) {
+			console.log('index: '+nodeList[i].index+'  depth: '+nodeList[i].depth+'  上限：'+nodeList[i].up+'  下限: '+nodeList[i].down+'  纵坐标: '+nodeList[i].y+'  内容: '+nodeList[i].text);
+		}
+		console.log("");
+	}
+
+	var raphael;
+	//初始化图形
+	window.onload = function() {
+		var width = document.body.clientWidth;
+		raphael = new Raphael(10,80,width,5000);
+		raphael.path('M40,400 L120,400').attr('stroke','#abc');
+		var myRoot = new node(null);
+		myRoot.setIndex(0);
+		nodeList.push(myRoot);
+		globalIndex++;
+		myRoot.setNode(120,470);
+		myRoot.setDepth(1);
+		optionList.head = new listnode(0,nodeList[0]);
+		optionList.currentNode = optionList.head;
+		print();
+	}
+	
+
+	//用于连接div与类的功能函数
+	addChild = function(index) {
+		for (var i = 0; i < nodeList.length; i++)
+			if (nodeList[i].index == index)
+				nodeList[i].addChild(0);
+	}
+
+	//完成增删改后进行修改
+	getText = function(index) {
+		var text = $('#'+index).val();
+		nodeList[index].setText(text);
+		rePaint();
+	}
+
+	//以下为固定位置的按钮函数
+	var back = $('.back');
+	back.click(function() {
+		var current = optionList.currentNode;
+		var op = current.option;
+		var node = current.node;
+		switch (op) {
+			case 1: {
+				node.deleteNode(1);
+				optionList.currentNode = current.prev;
+				break;
+			}
+			case 2: {
+				//node.addChild();
+				break;
+			}
+			default: break;
+		}
+	})
+</script>
