@@ -7,13 +7,81 @@
 	<script src="js/raphael.js"></script>
 	<title>思维导图</title>
 	<link rel="stylesheet" href="css/main.css">
+	<link rel="stylesheet" href="css/form-elements.css">
+	<link rel="stylesheet" href="css/style.css">
+	<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+	<script src="js/bootstrap.min.js"></script>
 </head>
 
 <body>
-	<div class="header"></div>
-	<img src="img/back.svg" width="24" class="back">
-	<img src="img/right.svg" width="24">
-	<img src="img/apps.svg" width="24">
+	<div class="header">
+		<div class="logo">MindMapper</div>
+		<div class="op_user">注册</div>
+		<div class="op_user">登录</div>
+	</div>
+	<div class="clearfix"></div>
+	<img class="op" src="img/back.svg" width="24" id="back">
+	<img class="op" src="img/right.svg" width="24" id="forward">
+	<img class="op" src="img/form.svg" width="24" id="save">
+	<img class="op" src="img/apps.svg" width="24" id="history">
+
+	<!--历史记录弹窗-->
+	
+	
+	<!--登录弹窗-->
+	<div class="form-box modalBox" hidden="hidden">
+		<div class="form-top">
+			<div class="form-top-left">
+				<h3>Welcome to mindMapper</h3>
+	    		<p>Fill in the form below to get instant access:</p>
+			</div>
+			<div class="form-top-right">
+				<i class="fa fa-pencil"></i>
+			</div>
+	    </div>
+	    <div class="form-bottom">
+	        <form role="form" action="" method="post" class="registration-form">
+	        	<div class="form-group">
+	        		<label class="sr-only" for="form-first-name">Username</label>
+	            	<input type="text" name="form-first-name" placeholder="please input your username" class="form-first-name form-control" id="form-first-name">
+	            </div>
+	            <div class="form-group">
+	            	<label class="sr-only" for="form-last-name">Password</label>
+	            	<input type="password" name="form-last-name" placeholder="please input your password" class="form-last-name form-control" id="form-last-name" style="padding: 23px 22px; font-family: 'Roboto', sans-serif; font-size: 16px; font-weight: 300; box-shadow: none">
+	            </div>
+	            <button type="submit" class="btn">Login!</button>
+	        </form>
+	    </div>
+	</div>
+	<!--注册弹窗-->
+	<div class="form-box modalBox" hidden="hidden">
+		<div class="form-top">
+			<div class="form-top-left">
+				<h3>New to mindMapper ? ： ）</h3>
+	    		<p>Fill in the form below to get instant access:</p>
+			</div>
+			<div class="form-top-right">
+				<i class="fa fa-pencil"></i>
+			</div>
+	    </div>
+	    <div class="form-bottom">
+	        <form role="form" action="" method="post" class="registration-form">
+	        	<div class="form-group">
+	        		<label class="sr-only" for="form-first-name">Username</label>
+	            	<input type="text" name="form-first-name" placeholder="please input your username" class="form-first-name form-control" id="form-first-name">
+	            </div>
+	            <div class="form-group">
+	            	<label class="sr-only" for="form-last-name">Password</label>
+	            	<input type="password" name="form-last-name" placeholder="please input your password" class="form-last-name form-control" id="form-last-name" style="padding: 23px 22px; font-family: 'Roboto', sans-serif; font-size: 16px; font-weight: 300; box-shadow: none">
+	            </div>
+	            <div class="form-group">
+	            	<label class="sr-only" for="form-last-name">Confirm</label>
+	            	<input type="password" name="form-last-name" placeholder="please confirm your password" class="form-last-name form-control" id="form-last-name" style="padding: 23px 22px; font-family: 'Roboto', sans-serif; font-size: 16px; font-weight: 300; box-shadow: none">
+	            </div>
+	            <button type="submit" class="btn">Register!</button>
+	        </form>
+	    </div>
+	</div>
 </body>
 
 <script>
@@ -465,8 +533,9 @@
 		rePaint();
 	}
 
-	//以下为固定位置的按钮函数
-	var back = $('.back');
+//以下为固定位置的按钮函数
+	//后退按钮
+	var back = $('#back');
 	back.click(function() {
 		var current = optionList.currentNode;
 		var op = current.option;
@@ -483,5 +552,11 @@
 			}
 			default: break;
 		}
+	})
+
+	//获取历史纪录
+	var history = $('#history');
+	history.click(function() {
+
 	})
 </script>
