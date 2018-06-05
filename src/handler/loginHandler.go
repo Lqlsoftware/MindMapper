@@ -1,8 +1,9 @@
 package handler
 
 import (
+	"github.com/Lqlsoftware/mindmapper/src/model"
+	"github.com/Lqlsoftware/mindmapper/src/utils"
 	"github.com/astaxie/beego"
-	"../model"
 )
 
 type LoginController struct {
@@ -15,15 +16,11 @@ func (this *LoginController) POST() {
 
 	user, err := model.VaildUser(username, password)
 	if err != nil {
-		//
-		this.Ctx.WriteString("faild")
+		// return msg
+		this.Ctx.WriteString(utils.GetJsonResult("login failed", -1, nil))
 	}
-
+	// save to session
 	this.SetSession("user", user)
-
-	this.Ctx.WriteString("success")
-
-	//if this.GetSession("user") == nil {
-	//
-	//}
+	// return msg
+	this.Ctx.WriteString(utils.GetJsonResult("login success", 1, user))
 }
