@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <script src="js/jquery.js"></script>
+	<script src="js/raphael.js"></script>
+	
+	
+	<title>思维导图</title>
+	<link rel="stylesheet" href="css/main.css">
+</head>
+
+<body>
+</body>
+
+<script>
+	var nodeList = [];
+	var globalIndex = 0;
+	//分支颜色
+	var paintColor =  new Array("red","orange","yellow","green","blue","pink","purple");
+	//鼠标坐标
+	var positionx;
+	var positiony;
+	var mousedown=0;
+	//存储每个节点对象
+	var node = function(parent) {
+		//节点序号
+		this.index = 0;
+		this.paint=0;
+		//节点坐标
+		//分支颜色
+		this.color=0;
+		this.x = 0;
+		this.y = 0;
+		//节点上下距离限
+		this.up = 20;
+		this.down = 20;
+		//节点在树中的层数
+		this.depth = 0;
+		//节点父亲
+		this.parent = parent;
+		//节点兄长
+		this.prebro = null;
+		//节点孩子
+		this.children = [];
+		//设置节点连接的边
+		this.edge = [];
+		this.edgeNum = 0;
+		//节点文字
+		this.text = null;
+		//节点在子树中的位置
+		this.num = 0;
+		//设置分支颜色
+		this.setColor = function(color){
+			this.color = color;
+		}
+		//文字设置于提取
+		this.setText = function(text) {
+			this.text = text;
+		}
+		//设置节点高度
+		this.setHeight = function(y) {
+			this.y = y;
+		}
+		//设置节点序号
+		this.setIndex = function(index) {
+			this.index = index;
+		}
+		//设置节点上下距离限
+		this.setDistance = function(up,down) {
+			this.up = up;
+			this.down = down;
+		}
+		//设置节点所在层数
+		this.setDepth = function(depth) {
+			this.depth = depth;
+		}
+		//设置节点位置
+		this.setNode = function(x,y) {
+			this.x = x;
+			this.y = y;
+			//添加节点
+			$('body').append('<div class="plus" style="left:'+x+'px;top:'+y+'px" onmousedown="mouseM('+x+','+this.index+','+y+')" >'+'+'+'</div>');
+			//$('body').append('<div class="plus" style="left:'+x+'px;top:'+y+'px" onmouseup="addChild('+this.index+'),stopmouse()">'+'+'+'</div>');
+		}
+		//设置兄长
+		this.setPreBro = function(bro) {
+			this.prebro = bro;
+		}
+		//添加孩子
+		
+		this.addChild = function() {
+			//创建新的孩子并添加到节点集中
+			var newNode = new node(this);
+			newNode.setIndex(globalIndex);
+			nodeList.push(newNode);
+			this.children.push(newNode);
+			globalIndex++;
+			newNode.setDepth(this.depth+1);
+			$('#divmove').remove();
+			if(newNode.depth==2){
+				newNode.setColor(globalIndex%7);
+			}
+			else{
+				newNode.setColor(newNode.parent.color);
+			}
+			if (this.edgeNum > 0)
+				newNode.setPreBro(this.children[this.edgeNum-1]);
+			//this.paintCurve(newNode);
+			this.edgeNum += 1;
+			newNode.num=this.edgeNum-1;
+			calcSpace(nodeList[0]);
+			updateLocation(nodeList[0]);
+			newNode.paint=1;
+			//this.downClick(newNode);
+			print();
+			rePaint();
+			newNode.paint=0;
+			//this.paintCurve(newNode,globalIndex,newNode.y);
+		}
+		//删除孩子
+		this.deleteNode = function() {
+			var parent = this.parent;
+			var index = this.index;
+			var howOldIm;
+			//获取到该节点是父亲的第howOldIm个孩子
+			for (var k = 0; k < parent.edgeNum; k++) 
+				if (parent.children[k].index == index){
+					howOldIm = k;
+					break;
+				}
+			console.log(howOldIm);
+			if (howOldIm == 0 && parent.edgeNum > 1) 
+				parent.children[1].setPreBro(null);
+			else if (howOldIm != parent.edgeNum - 1)
+				parent.children[howOldIm+1].setPreBro(parent.children[howOldIm-1]);
+			//从线性数组中删除节点以及其孩子
+			for (var i = 0; i < nodeList.length; i++)
+				if (nodeList[i].index == index) {
+					deleteSubTree(index);
+				}
+			//从父亲的孩子列表中删除节点
+			console.log('edgeNum '+parent.edgeNum);
+			for (var j = 0; j < parent.edgeNum; j++)
+				if (parent.children[j].index == index) {
+					parent.children.splice(j,1);
+					break;
+				}
+			parent.edgeNum -= 1;
+			delete this;
+			//console.log(nodeList);
+			calcSpace(nodeList[0]);
+			updateLocation(nodeList[0]);
+			print();
+			rePaint();
+		}
+		//动态绘画分支
+		this.paintCurve = function(newNode,index,y2) {
+			//绘制曲线
+			//x1,y1为起始点；x2为贝塞尔曲线横坐标中间点;x3为贝塞尔曲线横坐标终点,x4为直线横坐标终点,y2为线条终点
+			var x1 = this.x;
+			var y1 = this.y;
+			var x2 = x1 + 10;
+			var x3 = x2 + 10;
+			var	x4 = x3 + 80;
+			var p=raphael.path('M'+x1+','+y1+' '+'L'+x1+','+y1);
+ 			//var p=raphael.path('cx:'+x1+','+'cy:'+y1+','+'r:'+0);
+			p.animate({path:'M'+x1+','+y1+' Q'+x2+','+y2+' '+x3+','+y2+' '+'L'+x4+','+y2},500).attr('stroke',paintColor[newNode.color]);
+			newNode.setNode(x4,y2);
+			newNode.setText();
+			$('input').eq(newNode.index).val(newNode.text);
+		}
+		this.repaintCurve = function(newNode,index,y2) {
+			//绘制曲线
+			//x1,y1为起始点；x2为贝塞尔曲线横坐标中间点;x3为贝塞尔曲线横坐标终点,x4为直线横坐标终点,y2为线条终点
+			var x1 = this.x;
+			var y1 = this.y;
+			var x2 = x1 + 10;
+			var x3 = x2 + 10;
+			var	x4 = x3 + 80;
+			this.edge[index] =raphael.path('M'+x1+','+y1+' Q'+x2+','+y2+' '+x3+','+y2+' '+'L'+x4+','+y2).attr('stroke',paintColor[newNode.color]);
+			//点击激活事件
+			this.edge[index].click(active);
+			newNode.setNode(x4,y2);
+			newNode.setText();
+			$('input').eq(newNode.index).val(newNode.text);
+		}
+
+		this.setText = function() {
+			var x = this.x - 70;
+			var y = this.y - 15;
+			$('body').append('<input id="'+this.index+'" class="text" style="left:'+x+'px;top:'+y+'px" placeholder="text" onclick="getText('+this.index+')">');
+		}
+		/*this.dragCurve() {
+			实现raphael拖动
+			 var start = function (x, y) {
+			    this.attr({opacity: 1});
+			    this.lastX = x;
+			     this.lastY = y;
+			 },
+			 move = function (dx, dy, x, y) {
+		     var deltaX = x - this.lastX;
+			 var deltaY = y - this.lastY;
+			     this.translate(deltaX, deltaY);
+			     this.lastX = x;
+			     this.lastY = y;
+			 },
+			 up = function () {
+			     raphael.clear();
+				$('div').remove();
+			 };
+			  
+			 this.edge[this.edgeNum].drag(move, start, up);
+		}*/
+	}
+	
+	//边的点击激活函数
+	var active = function() {
+		//var temp = this;
+		this.attr('stroke','pink');
+		var index = this.attr('r');
+		console.log('active '+index);
+		//点击delete删除对应节点
+		$(document).keydown(function(event) {
+			if (event.keyCode == 46) {
+				for (var i = 0; i < nodeList.length; i++) {
+					if (nodeList[i].index == index) {
+						nodeList[i].deleteNode();
+						break;
+					}
+				}
+			}
+		})
+	}
+
+	//递归删除子树所有的孩子
+	var deleteSubTree = function(index) {
+		var currentNode;
+		for (var i = 0; i < nodeList.length; i++)
+			if (nodeList[i].index == index) {
+				currentNode = nodeList[i];
+				break;
+			}
+		for (var j = 0; j < currentNode.edgeNum; j++) {
+			deleteSubTree(currentNode.children[j].index);
+		}
+		for (var k = 0; k < nodeList.length; k++)
+			if (nodeList[k].index == index) {
+				nodeList.splice(k,1);
+				break;
+			}
+	}
+
+	//递归计算n叉树上下距离限
+	var calcSpace = function(root) {
+		if (root == null) 
+			return null;
+		else if (root.edgeNum == 0)
+			return root;
+		else {
+			for (var i = 0; i < root.edgeNum; i++) {
+				calcSpace(root.children[i]);
+			}
+			var up = 0;
+			var down = 0;
+			if (root.edgeNum == 1) down = root.down;
+			if (root.edgeNum % 2 == 0) {
+				for (var i = 0; i < root.edgeNum/2; i++) 
+					up += root.children[i].up + root.children[i].down;
+				for (var i = root.edgeNum/2; i < root.edgeNum;i++) 
+					down += root.children[i].up + root.children[i].down;
+			}
+			else if (root.edgeNum % 2 == 1) {
+				for (var i = 0; i < root.edgeNum/2; i++) 
+					up += root.children[i].up + root.children[i].down;
+				for (var i = Math.floor(root.edgeNum/2)+1; i < root.edgeNum;i++) 
+					down += root.children[i].up + root.children[i].down;
+			}
+			root.setDistance(up,down);
+		}
+		return root;
+	}
+	function getMousePos(event) {
+			var e = event || window.event;
+			var scrollX = document.documentElement.scrollLeft || document.body.scrollLeft;
+			var scrollY = document.documentElement.scrollTop || document.body.scrollTop;
+			var x = e.pageX || e.clientX + scrollX;
+			var y = e.pageY || e.clientY + scrollY;
+			return { 'x': x, 'y': y };
+		}
+	//确定节点位置
+	var locateNode = function(index){
+		for(var i=0;i<globalIndex;i++){
+			if(nodeList[i].index==index){
+				return nodeList[i];
+			}
+		}
+	}
+	//鼠标移动事件
+	var mouseM = function(x,index,y){
+		$('body').append('<div id="divmove" position="absolute" class="plus" style="left:'+x+'px;top:'+y+'px" onmouseup="addChild('+index+')">'+'+'+'</div>');
+		mousedown=1;
+		$(document).mousemove(function(){
+			if(mousedown){
+			var position;
+			var newNode = locateNode(index);
+				var x2=newNode.x+10;
+				var x3=x2+10;
+				position=getMousePos();
+				var x4=position.x-7;
+				var y2= position.y-5;
+				rePaint();
+				$('body').append('<div id="divmove" position="absolute" class="plus" style="left:'+x4+'px;top:'+y2+'px" onmouseup="moveChild('+x4+','+index+','+y2+')">'+'+'+'</div>');
+				$('#divmove').css('left',x4);
+				$('#divmove').css('top',y2);
+				//var x4=100;
+				//var y2=100;
+				if(index>0){
+					raphael.path('M'+newNode.x+','+newNode.y+' Q'+x2+','+y2+' '+x3+','+y2+' '+'L'+position.x+','+position.y).attr('stroke',paintColor[newNode.color]);
+					}
+				else{
+					raphael.path('M'+newNode.x+','+newNode.y+' Q'+x2+','+y2+' '+x3+','+y2+' '+'L'+position.x+','+position.y).attr('stroke',paintColor[(globalIndex+1)%7]);
+					}
+				}
+		});
+	}
+	//插入子树
+	var moveChild = function(x,index,y){
+		var newNode = locateNode(index);
+		var length = Math.sqrt((newNode.x-x)*(newNode.x-x)+(newNode.y-y)*(newNode.y-y));
+		if(length<20)
+			addChild(index);
+		else{
+			mousedown=0;
+			calculate(x,index,y);
+			rePaint();
+		}
+	}
+	//计算插入子树
+	//记录最近的节点
+	var nearest=10000;
+	var position;
+	var pnode;
+	var nodeindex;
+	var  calculate = function(x,index,y){
+		var group = [];
+		var newNode = locateNode(index);
+		group[0] = nodeList[0];
+		var f=0;
+		var positioni;
+		//队列首部和尾部
+		var gh = 0;
+		var gl = 0;
+		//上面最近和下面最近
+		var nearh=10000;
+		while(gh<=gl){
+			positioni=-1;
+			for(var i=0;i<group[gh].edgeNum;i++){
+				gl++;
+				group[gl]=group[gh].children[i];
+				if((group[gh].x-x)>0){
+					gh++;
+					continue;
+				}
+				else{
+					var length = Math.sqrt((group[gh].children[i].x-x)*(group[gh].children[i].x-x)+(group[gh].children[i].y-y)*(group[gh].children[i].y-y));
+					if(length<nearh){
+						positioni=i;
+						nearh=length;
+					}
+				}
+			}
+			if(nearest>nearh){
+				nearest=nearh;
+				position=positioni;
+				pnode=group[gh];
+			}
+			if(positioni>0&&group[gh].children[group[gh].edgeNum-1].y-y>0&&positioni<group[gh].edgeNum){
+				f=1;
+				if(group[gh].children[positioni].y-y>0)
+					positioni=positioni+1;
+				//插入节点
+				newNode.parent.edgeNum--;
+				newNode.parent.children.splice(newNode.num,1);
+				newNode.setNum(positioni);
+				newNode.parent = group[gh];
+				group[gh].children.splice(positioni+1,0,newNode);
+				group[gh].edgeNum += 1;
+				//group[gh].push(newNode);
+				for(var j = group[gh].edgeNum-1;j>positioni;j--){
+					group[gh].children[j].num++;
+				}
+				newNode.setDepth(pnode.depth+1);
+				newNode.setPreBro(group[gh].children[positioni-1]);
+				group[gh].children[positioni+1].setPreBro(newNode);
+				calcSpace(nodeList[0]);
+				updateLocation(nodeList[0]);
+				newNode.paint=1;
+				print();
+				rePaint();
+				newNode.paint=0;
+			}
+			gh++;
+		}
+		if(f==0){
+			newNode.parent.edgeNum--;
+			newNode.parent.children.splice(newNode.num,1);
+			if(pnode.children[0].y-y>0){
+				pnode.children.splice(0,0,newNode);
+				pnode.edgeNum += 1;
+				newNode.num = 0;
+				if (pnode.edgeNum > 0)
+					pnode.children[1].setPreBro(newNode);
+				for(var j = pnode.edgeNum-1;j>0;j--){
+					pnode.children[j].num++;
+				}
+			}
+			else{
+				pnode.children.push(newNode);
+				pnode.edgeNum += 1;
+				newNode.num=pnode.edgeNum-1;
+				if (pnode.edgeNum > 0)
+					newNode.setPreBro(pnode.children[pnode.edgeNum-2]);
+			}
+			newNode.parent = pnode;
+			newNode.setDepth(pnode.depth+1);
+			calcSpace(nodeList[0]);
+			updateLocation(nodeList[0]);
+			newNode.paint=1;
+			print();
+			rePaint();
+			newNode.paint=0;
+		}
+	}
+	//打印计算结果，用于测试
+	var print = function() {
+		for (var i = 0; i < nodeList.length; i++) {
+			console.log('depth: '+nodeList[i].depth+'  上限：'+nodeList[i].up+'  下限: '+nodeList[i].down+'  纵坐标: '+nodeList[i].y+'  内容: '+nodeList[i].text);
+		}
+		console.log("");
+	}
+
+	//更新位置信息
+	var updateLocation = function(root) {
+		if (root == null) 
+			return null;
+		else if (root.edgeNum == 0) 
+			return root;
+		else {
+			//确定第一个孩子的位置
+			for (var i = 0; i < root.edgeNum; i++) {
+				if (root.prebro == null && i == 0) 
+					root.children[0].setHeight(root.y - 40*(root.edgeNum%2==1?Math.floor(root.edgeNum/2)+1:root.edgeNum/2) + 20);
+				else if (i == 0)
+					root.children[0].setHeight(root.prebro.y + root.prebro.down + root.children[0].up);
+				else
+					root.children[i].setHeight(root.children[i-1].y + root.children[i-1].down + root.children[i].up);
+				updateLocation(root.children[i]);
+			}
+		}
+	}
+	//绘制子图
+	var subRePaint = function(root) {
+		if (root == null) 
+			return null;
+		else if (root.edgeNum == null)
+			return root;
+		else {
+			var i = 0;
+			for (i; i < root.edgeNum; i++) {
+				if(root.children[i].paint==1){
+					root.paintCurve(root.children[i],i,root.children[i].y);
+				}
+				else{
+					root.repaintCurve(root.children[i],i,root.children[i].y);
+				}
+				subRePaint(root.children[i]);
+			}
+		}
+	}
+
+	//重绘画布
+	var rePaint = function() {
+		//清空画布
+		raphael.clear();
+		$('div').remove();
+		$('input').remove();
+		//初始化绘制
+		raphael.path('M40,400 L120,400').attr('stroke','#abc');
+		nodeList[0].setNode(120,400);
+		//绘制非根节点
+		subRePaint(nodeList[0]);
+	}
+
+	var raphael;
+	//初始化图形
+	window.onload = function() {
+		raphael = new Raphael(10,10,5000,5000);
+		raphael.path('M40,400 L120,400').attr('stroke','#abc');
+		//var rec = raphael.rect(40,350,40,20);
+		var myRoot = new node(null);
+		myRoot.setIndex(0);
+		nodeList.push(myRoot);
+		globalIndex++;
+		myRoot.setNode(120,400);
+		myRoot.setDepth(1);
+		print();
+	}
+	//
+	//用于连接div于类的功能函数
+	addChild = function(index) {
+		nodeList[index].addChild();
+		mousedown=0;
+	}
+
+	getText = function(index) {
+		var text = $('#'+index).val();
+		nodeList[index].setText(text);
+	}
+
+</script>
