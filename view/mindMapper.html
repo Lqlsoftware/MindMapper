@@ -3,7 +3,7 @@
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <script src="js/jquery.js"></script>
+    <script src="js/jquery.min.js"></script>
 	<script src="js/raphael.js"></script>
 	<title>思维导图</title>
 	<link rel="stylesheet" href="css/main.css">
@@ -16,8 +16,8 @@
 <body>
 	<div class="header">
 		<div class="logo">MindMapper</div>
-		<div class="op_user">注册</div>
-		<div class="op_user">登录</div>
+		<div class="op_user" id="register">注册</div>
+		<div class="op_user" id="login">登录</div>
 	</div>
 	<div class="clearfix"></div>
 	<img class="op" src="img/back.svg" width="24" id="back">
@@ -29,7 +29,7 @@
 	
 	
 	<!--登录弹窗-->
-	<div class="form-box modalBox" hidden="hidden">
+	<div class="form-box modalBox login" hidden="hidden">
 		<div class="form-top">
 			<div class="form-top-left">
 				<h3>Welcome to mindMapper</h3>
@@ -40,21 +40,19 @@
 			</div>
 	    </div>
 	    <div class="form-bottom">
-	        <form role="form" action="" method="post" class="registration-form">
-	        	<div class="form-group">
-	        		<label class="sr-only" for="form-first-name">Username</label>
-	            	<input type="text" name="form-first-name" placeholder="please input your username" class="form-first-name form-control" id="form-first-name">
-	            </div>
-	            <div class="form-group">
-	            	<label class="sr-only" for="form-last-name">Password</label>
-	            	<input type="password" name="form-last-name" placeholder="please input your password" class="form-last-name form-control" id="form-last-name" style="padding: 23px 22px; font-family: 'Roboto', sans-serif; font-size: 16px; font-weight: 300; box-shadow: none">
-	            </div>
-	            <button type="submit" class="btn">Login!</button>
-	        </form>
+        	<div class="form-group">
+        		<label class="sr-only" for="form-first-name">Username</label>
+            	<input type="text" name="form-first-name" placeholder="please input your username" class="form-first-name form-control" id="form-first-name">
+            </div>
+            <div class="form-group">
+            	<label class="sr-only" for="form-last-name">Password</label>
+            	<input type="password" name="form-last-name" placeholder="please input your password" class="form-last-name form-control" id="form-last-name" style="padding: 23px 22px; font-family: 'Roboto', sans-serif; font-size: 16px; font-weight: 300; box-shadow: none">
+            </div>
+            <button class="btn" id="loginSubmit">Login!</button>
 	    </div>
 	</div>
 	<!--注册弹窗-->
-	<div class="form-box modalBox" hidden="hidden">
+	<div class="form-box modalBox register" hidden="hidden">
 		<div class="form-top">
 			<div class="form-top-left">
 				<h3>New to mindMapper ? ： ）</h3>
@@ -65,23 +63,35 @@
 			</div>
 	    </div>
 	    <div class="form-bottom">
-	        <form role="form" action="" method="post" class="registration-form">
-	        	<div class="form-group">
-	        		<label class="sr-only" for="form-first-name">Username</label>
-	            	<input type="text" name="form-first-name" placeholder="please input your username" class="form-first-name form-control" id="form-first-name">
-	            </div>
-	            <div class="form-group">
-	            	<label class="sr-only" for="form-last-name">Password</label>
-	            	<input type="password" name="form-last-name" placeholder="please input your password" class="form-last-name form-control" id="form-last-name" style="padding: 23px 22px; font-family: 'Roboto', sans-serif; font-size: 16px; font-weight: 300; box-shadow: none">
-	            </div>
-	            <div class="form-group">
-	            	<label class="sr-only" for="form-last-name">Confirm</label>
-	            	<input type="password" name="form-last-name" placeholder="please confirm your password" class="form-last-name form-control" id="form-last-name" style="padding: 23px 22px; font-family: 'Roboto', sans-serif; font-size: 16px; font-weight: 300; box-shadow: none">
-	            </div>
-	            <button type="submit" class="btn">Register!</button>
-	        </form>
+        	<div class="form-group">
+        		<label class="sr-only" for="form-first-name">Username</label>
+            	<input type="text" name="form-first-name" placeholder="please input your username" class="form-first-name form-control" id="form-first-name2">
+            </div>
+            <div class="form-group">
+            	<label class="sr-only" for="form-last-name">Password</label>
+            	<input type="password" name="form-last-name" placeholder="please input your password" class="form-last-name form-control" id="form-last-name1" style="padding: 23px 22px; font-family: 'Roboto', sans-serif; font-size: 16px; font-weight: 300; box-shadow: none">
+            </div>
+            <div class="form-group">
+            	<label class="sr-only" for="form-last-name">Confirm</label>
+            	<input type="password" name="form-last-name" placeholder="please confirm your password" class="form-last-name form-control" id="form-last-name2" style="padding: 23px 22px; font-family: 'Roboto', sans-serif; font-size: 16px; font-weight: 300; box-shadow: none">
+            </div>
+            <button class="btn" id="registerSubimt">Register!</button>
 	    </div>
 	</div>
+	<!--历史记录弹窗-->
+	<div class="form-box modalBox historyModel" hidden="hidden">
+		<div class="form-top">
+			<div class="form-top-left">
+				<h3>Here is your history list ： ）</h3>
+	    		<p>never miss what you had done</p>
+			</div>
+	    </div>
+	    <div class="form-bottom historyList" style="color: #fff">
+        	<div>2017.8.8</div>
+	    </div>
+	</div>
+	<!--阴影-->
+	<div class="shadow" hidden="hidden"></div>
 </body>
 
 <script>
@@ -504,7 +514,8 @@
 	var raphael;
 	//初始化图形
 	window.onload = function() {
-		var width = document.body.clientWidth;
+		var width = document.body.scrollWidth;
+		$('.shadow').css('width',width);
 		raphael = new Raphael(10,80,width,5000);
 		raphael.path('M40,400 L120,400').attr('stroke','#abc');
 		var myRoot = new node(null);
@@ -553,10 +564,115 @@
 			default: break;
 		}
 	})
+	//将思维导图上传至服务器
+	var save = $('#save');
+	save.click(function() {
+		$.ajax({
+			type: 'POST',
+			url: '',
+			data: {
+				tree: nodeList
+			},
+			dataType: 'json',
+			success: function() {
+				alert('mindMapper');
+			},
+			error: function(XMLHttpRequest, textStatus, errorThrown) {
+				//location.href = 'error.html';
+			}
+		})
+	})
 
 	//获取历史纪录
-	var history = $('#history');
-	history.click(function() {
+	var myHistory = $('#history');
+	var historyModel = $('.historyModel');
+	myHistory.click(function() {
+		alert('23');
+		$.ajax({
+			type: 'GET',
+			url: '',
+			dataType: 'json',
+			success: function(data) {
+				//historyList.append('');
+				historyModel.css('display','block');
+				shadow.css('display','block');
+			},
+			error: function(XMLHttpRequest, textStatus, errorThrown) {
+				//location.href = 'error.html';
+			}
+		})
+		
+	})
 
+//用户登录系统
+	config = "http://192.168.43.39:8080";
+
+	var login = $('#login');
+	var loginModel = $('.login');
+	var register = $('#register');
+	var registerModel = $('.register');
+	var shadow = $('.shadow');
+	//登录按钮
+	login.click(function() {
+		loginModel.css('display','block');
+		shadow.css('display','block');
+	})	
+	//注册按钮
+	register.click(function() {
+		registerModel.css('display','block');
+		shadow.css('display','block');
+	})
+	//点击模态框外空间隐藏模态框
+	shadow.click(function() {
+		loginModel.css('display','none');
+		registerModel.css('display','none');
+		historyModel.css('display','none');
+		shadow.css('display','none');
+	})
+	//登录提交按钮
+	var loginSubmit = $('#loginSubmit');
+	loginSubmit.click(function() {
+
+		var username = $('#form-first-name').val();
+		var password = $('#form-last-name').val();
+		alert(config + '/login');
+		$.ajax({
+			type: 'POST',
+			url: config + '/login',
+			data: {
+				'username': username,
+				'password': password
+			},
+			dataType: 'json',
+			success: function(data) {
+				console(data);
+			},
+			error: function(XMLHttpRequest, textStatus, errorThrown) {
+				//location.href = 'error.html';
+			}
+		})
+	})
+	//注册提交按钮
+	var registerSubimt = $('#registerSubimt');
+	registerSubimt.click(function() {
+		var username = $('#form-first-name2').val();
+		var password = $('#form-last-name1').val();
+		var repeatPassword = $('#form-last-name2').val();
+		$.ajax({
+			type: 'POST',
+			url: '',
+			data: {
+				username: username,
+				password: password,
+				repeatPassword: repeatPassword
+			},
+			dataType: 'json',
+			success: function(data) {
+
+			},
+			error: function(XMLHttpRequest, textStatus, errorThrown) {
+				//location.href = 'error.html';
+			}
+		})
 	})
 </script>
