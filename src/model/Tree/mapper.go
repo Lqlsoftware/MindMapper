@@ -1,9 +1,10 @@
 package Tree
 
 import (
-	"encoding/json"
+"encoding/json"
 
-	"github.com/sergi/go-diff/diffmatchpatch"
+
+"github.com/sergi/go-diff/diffmatchpatch"
 )
 
 /*
@@ -15,10 +16,10 @@ import (
 	Value 	: string   	节点文字内容
  */
 type TreeNode struct {
-	Idx		string
-	Father	string
-	Rank	string
-	Value 	string
+	Idx		string 	`json:"idx"`
+	Father	string 	`json:"father"`
+	Rank	string 	`json:"rank"`
+	Value 	string 	`json:"value"`
 }
 
 /*
@@ -37,8 +38,8 @@ type TreeNode struct {
 	·-------------------------------------·
  */
 type MindMapperTree struct {
-	Tree	map[string]TreeNode
-	Hash	string
+	Tree	map[string]TreeNode  	`json:"tree"`
+	Hash	string 					`json:"hash"`
 }
 
 func (mindMapper *MindMapperTree)ToJson() (string,error) {
@@ -62,16 +63,16 @@ func (mindMapper *MindMapperTree)DiffWith(other *MindMapperTree) MapperDiff {
 			// add
 			valueDiff := engine.DiffMain("", curr.Value, true)
 			diff := MapperNodeDiff{
-				Node:		&curr,
+				Node:		curr,
 				Operate:	Add,
 				Different:	valueDiff,
 			}
 			Diffs.Nodes = append(Diffs.Nodes, diff)
-		} else {
+		} else if curr.Value != last.Value {
 			// modify
 			valueDiff := engine.DiffMain(curr.Value, last.Value, true)
 			diff := MapperNodeDiff{
-				Node:		&curr,
+				Node:		curr,
 				Operate:	Modify,
 				Different:	valueDiff,
 			}
@@ -83,7 +84,7 @@ func (mindMapper *MindMapperTree)DiffWith(other *MindMapperTree) MapperDiff {
 			// delete
 			valueDiff := engine.DiffMain(last.Value, "", true)
 			diff := MapperNodeDiff{
-				Node:		&last,
+				Node:		last,
 				Operate:	Delete,
 				Different:	valueDiff,
 			}
@@ -95,7 +96,7 @@ func (mindMapper *MindMapperTree)DiffWith(other *MindMapperTree) MapperDiff {
 
 func (mindMapper *MindMapperTree)MergeFrom(Diff MapperDiff) {
 	for _, add := range Diff.Nodes {
-		mindMapper.addNode(add.Node)
+		mindMapper.addNode(&add.Node)
 	}
 	mindMapper.updateHash()
 }

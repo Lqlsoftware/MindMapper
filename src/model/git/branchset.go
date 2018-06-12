@@ -1,7 +1,7 @@
 package git
 
 type BranchSet struct {
-	TreeId			int
-	MainBranchId	int
-	BranchIds		[]int
+	TreeId			int		`json:"treeId"`
+	MainBranchId	int		`json:"mainBranchId"`
+	BranchIds		[]int	`json:"branchIds"`
 }

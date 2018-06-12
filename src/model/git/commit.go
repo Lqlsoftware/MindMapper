@@ -10,26 +10,29 @@ import (
 )
 
 type Commit struct {
-	Id			int
-	Diff		Tree.MapperDiff
-	Time		int64
-	Title		string
-	Summary		string
-	Tree		Tree.MindMapperTree
+	Id			int					`json:"id"`
+	Diff		Tree.MapperDiff		`json:"diff"`
+	Time		int64				`json:"time"`
+	Title		string				`json:"title"`
+	Summary		string				`json:"summary"`
+	Tree		Tree.MindMapperTree	`json:"tree"`
 }
 
 func LoadCommit(Id int) (Commit, error) {
 	commit := Commit{}
-	err := orm.GetDatabase().C(config.COMMIT_CNAME).Find(bson.M{"Id": Id}).One(&commit)
+	err := orm.GetDatabase().C(config.COMMIT_CNAME).Find(bson.M{"id": Id}).One(&commit)
 	return commit, err
+}
+
+func (commit *Commit)Save() error {
+	return orm.GetDatabase().C(config.COMMIT_CNAME).Insert(commit)
 }
 
 func GetLastCommitId() int {
 	commit := Commit{}
 	id := 1
-
 	commits := orm.GetDatabase().C(config.COMMIT_CNAME)
-	err := commits.Find(bson.M{"Id":"$max"}).One(&commit)
+	err := commits.Find(bson.M{"id":"$max"}).One(&commit)
 	if err != nil {
 		id = 1
 	} else {
@@ -61,10 +64,7 @@ func (commit *Commit)MergeWith(other *Commit) (*Commit, *Conflict) {
 			Summary: "",
 			Tree: DstTree,
 		}
-		err := orm.GetDatabase().C(config.COMMIT_CNAME).Insert(commit)
-		if err != nil {
-			return nil, nil
-		}
+		commit.Save()
 		return &commit, nil
 	}
 	return nil, &conflict

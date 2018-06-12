@@ -10,7 +10,8 @@ type LoginController struct {
 	beego.Controller
 }
 
-func (this *LoginController) POST() {
+func (this *LoginController) Post() {
+	this.Ctx.ResponseWriter.Header().Set("Access-Control-Allow-Origin", "localhost")
 	username := this.GetString("username")
 	password := this.GetString("password")
 
@@ -18,6 +19,7 @@ func (this *LoginController) POST() {
 	if err != nil {
 		// return msg
 		this.Ctx.WriteString(utils.GetJsonResult("login failed", -1, nil))
+		return
 	}
 	// save to session
 	this.SetSession("user", user)
