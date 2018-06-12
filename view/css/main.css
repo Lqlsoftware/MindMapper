@@ -5,8 +5,8 @@ path {stroke-width: 4px;}
 .clearfix {clear: both;}
 
 /*用于点击非模态框部分时隐藏*/
-.shadow {background: #fff; height: 3000px; position: absolute; top: 100px; left: 0; z-index: 9;}
-
+.shadow {background: #fff; height: 3000px; position: absolute; top: 45px; left: 0; z-index: 9;}
+.shadow2 {background: #fff; height: 3000px; position: absolute; top: 100px; left: 0; z-index: 9;}
 /*加号实体*/
 .plus {position: absolute; background: #66ccff; color: #fff; border-radius: 50%; width: 20px; 
 	   height: 20px; font-size: 16px; text-align: center; line-height: 20px; cursor: pointer;}
@@ -19,7 +19,7 @@ path {stroke-width: 4px;}
 
 .logo {color: #fff; font-size: 20px; float: left; line-height: 45px; margin-left: 10px}
 /*登录登出操作*/
-.op_user {float: right; color: #fff; font-size: 18px; border: 1px solid #fff; width: 60px; cursor: pointer;
+.op_user {float: right; color: #fff; font-size: 18px; border: 1px solid #fff; padding: 1px 12px; cursor: pointer;
 	      text-align: center; line-height: 25px; margin-top: 9px; margin-right: 10px}
 /*图操作*/
 .op {float: left; margin-left: 10px; margin-top: 10px; cursor: pointer;}
@@ -30,3 +30,5 @@ path {stroke-width: 4px;}
 .label {margin: 0 auto;}
 .label .labelText {color: #fff; float: left; font-size: 15px; margin-left: 60px; width: 70px; margin-bottom: 20px;}
 .label input {margin-left: 20px; float: left;}
+	/*历史记录*/
+.record {cursor: pointer;}

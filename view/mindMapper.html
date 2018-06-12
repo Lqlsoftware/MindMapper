@@ -18,6 +18,8 @@
 		<div class="logo">MindMapper</div>
 		<div class="op_user" id="register">注册</div>
 		<div class="op_user" id="login">登录</div>
+		<div class="op_user" id="logout" hidden="hidden">退出</div>
+		<div class="op_user" id="my" hidden="hidden"></div>
 	</div>
 	<div class="clearfix"></div>
 	<img class="op" src="img/back.svg" width="24" id="back">
@@ -86,12 +88,11 @@
 	    		<p>never miss what you had done</p>
 			</div>
 	    </div>
-	    <div class="form-bottom historyList" style="color: #fff">
-        	<div>2017.8.8</div>
-	    </div>
+	    <div class="form-bottom historyList" style="color: #fff"></div>
 	</div>
 	<!--阴影-->
 	<div class="shadow" hidden="hidden"></div>
+	<div class="shadow2" hidden="hidden"></div>
 </body>
 
 <script>
@@ -516,6 +517,7 @@
 	window.onload = function() {
 		var width = document.body.scrollWidth;
 		$('.shadow').css('width',width);
+		$('.shadow2').css('width',width);
 		raphael = new Raphael(10,80,width,5000);
 		raphael.path('M40,400 L120,400').attr('stroke','#abc');
 		var myRoot = new node(null);
@@ -527,6 +529,26 @@
 		optionList.head = new listnode(0,nodeList[0]);
 		optionList.currentNode = optionList.head;
 		print();
+
+		//判断用户登录情况
+		$.ajax({
+			type: 'GET',
+			url: config + '/user',
+			dataType: 'json',
+			success: function(data) {
+				console.log(data);
+				if (data.code >= 0) {
+					login.css('display','none');
+					register.css('display','none');
+					logout.css('display','block');
+					my.css('display','block');
+					my.html(data.data.username);
+				}
+			},
+			error: function(XMLHttpRequest, textStatus, errorThrown) {
+				//location.href = 'error.html';
+			} 
+		})
 	}
 	
 
@@ -569,13 +591,13 @@
 	save.click(function() {
 		$.ajax({
 			type: 'POST',
-			url: '',
+			url: config + '/',
 			data: {
-				tree: nodeList
+				'tree': listnode
 			},
 			dataType: 'json',
-			success: function() {
-				alert('mindMapper');
+			success: function(data) {
+
 			},
 			error: function(XMLHttpRequest, textStatus, errorThrown) {
 				//location.href = 'error.html';
@@ -583,25 +605,33 @@
 		})
 	})
 
+	var shadow2 = $('.shadow2');
 	//获取历史纪录
 	var myHistory = $('#history');
 	var historyModel = $('.historyModel');
+	var historyList = $('.historyList');
 	myHistory.click(function() {
-		alert('23');
-		$.ajax({
-			type: 'GET',
-			url: '',
-			dataType: 'json',
-			success: function(data) {
-				//historyList.append('');
-				historyModel.css('display','block');
-				shadow.css('display','block');
-			},
-			error: function(XMLHttpRequest, textStatus, errorThrown) {
-				//location.href = 'error.html';
-			}
-		})
-		
+		historyModel.css('display','block');
+		shadow2.css('display','block');
+		historyList.append('<div class="record">2017.10.10</div>');
+		// $.ajax({
+		// 	type: 'GET',
+		// 	url: '',
+		// 	dataType: 'json',
+		// 	success: function(data) {
+		// 		//historyList.append('');
+		// 		historyModel.css('display','block');
+		// 		shadow.css('display','block');
+		// 	},
+		// 	error: function(XMLHttpRequest, textStatus, errorThrown) {
+		// 		//location.href = 'error.html';
+		// 	}
+		// })
+	})
+
+	var record = $('.record');
+	record.click(function() {
+
 	})
 
 //用户登录系统
@@ -611,15 +641,22 @@
 	var loginModel = $('.login');
 	var register = $('#register');
 	var registerModel = $('.register');
+	var logout = $('#logout');
+	var my = $('#my');
 	var shadow = $('.shadow');
+
 	//登录按钮
 	login.click(function() {
 		loginModel.css('display','block');
+		registerModel.css('display','none');
+		historyModel.css('display','none');
 		shadow.css('display','block');
 	})	
 	//注册按钮
 	register.click(function() {
 		registerModel.css('display','block');
+		loginModel.css('display','none');
+		historyModel.css('display','none');
 		shadow.css('display','block');
 	})
 	//点击模态框外空间隐藏模态框
@@ -629,13 +666,15 @@
 		historyModel.css('display','none');
 		shadow.css('display','none');
 	})
+	shadow2.click(function() {
+		historyModel.css('display','none');
+		shadow2.css('display','none');
+	})
 	//登录提交按钮
 	var loginSubmit = $('#loginSubmit');
 	loginSubmit.click(function() {
-
 		var username = $('#form-first-name').val();
 		var password = $('#form-last-name').val();
-		alert(config + '/login');
 		$.ajax({
 			type: 'POST',
 			url: config + '/login',
@@ -643,9 +682,19 @@
 				'username': username,
 				'password': password
 			},
+			crossDomain: true,
+			xhrFields: {
+				withCredentials: true
+			},
 			dataType: 'json',
 			success: function(data) {
-				console(data);
+				login.css('display','none');
+				register.css('display','none');
+				logout.css('display','block');
+				my.css('display','block');
+				my.html(data.data.username);
+				loginModel.css('display','none');
+				shadow.css('display','none');
 			},
 			error: function(XMLHttpRequest, textStatus, errorThrown) {
 				//location.href = 'error.html';
