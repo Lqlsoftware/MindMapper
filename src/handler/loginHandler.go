@@ -11,7 +11,6 @@ type LoginController struct {
 }
 
 func (this *LoginController) Post() {
-	this.Ctx.ResponseWriter.Header().Set("Access-Control-Allow-Origin", "localhost")
 	username := this.GetString("username")
 	password := this.GetString("password")
 

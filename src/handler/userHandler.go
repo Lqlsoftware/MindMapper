@@ -11,7 +11,6 @@ type UserController struct {
 }
 
 func (this *UserController) Get() {
-	this.Ctx.ResponseWriter.Header().Set("Access-Control-Allow-Origin", "localhost")
 	user := this.GetSession("user")
 	if user == nil {
 		this.Ctx.WriteString(utils.GetJsonResult("Not Login", -1, user))
