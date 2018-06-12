@@ -1,51 +1,34 @@
-<<<<<<< HEAD
-=======
 body {margin: 0;}
 
->>>>>>> dev
-path {
-	stroke-width: 4px;
-}
+path {stroke-width: 4px;}
 
-.plus { position: absolute;
-		background: #66ccff;
-		color: #fff; 
-		border-radius: 50%; 
-		width: 20px; 
-		height: 20px;
-		font-size: 16px; 
-		text-align: center; 
-		line-height: 20px;
-		cursor: pointer;
-}
+.clearfix {clear: both;}
 
-.text {
-	border: none;
-<<<<<<< HEAD
-	width: 65px;
-	position: absolute;
-	text-align: right;
-	background: rgba(0,0,0,0);
-=======
-	position: absolute;
-	text-align: right;
-	background: rgba(0,0,0,0);
-	font-family: Consolas;
-}
+/*用于点击非模态框部分时隐藏*/
+.shadow {background: #fff; height: 3000px; position: absolute; top: 45px; left: 0; z-index: 9;}
+.shadow2 {background: #fff; height: 3000px; position: absolute; top: 100px; left: 0; z-index: 9;}
+/*加号实体*/
+.plus {position: absolute; background: #66ccff; color: #fff; border-radius: 50%; width: 20px; 
+	   height: 20px; font-size: 16px; text-align: center; line-height: 20px; cursor: pointer;}
 
-.active {border: 1px solid #66ccff}
+/*文字输入*/
+.text {border: none; position: absolute; text-align: right; background: rgba(0,0,0,0); font-family: Consolas;}
 
-.dot {
-	background: #eee;
-	border-radius: 50%; 
-	width: 5px; 
-	height: 5px;
-	position: absolute;
-}
+/*导航栏*/
+.header {width: 100%; height: 45px; background: #000;}
 
-.header {
-	width: 100%;
-	height: 45px;
-	background: #000;
->>>>>>> dev
-}
+.logo {color: #fff; font-size: 20px; float: left; line-height: 45px; margin-left: 10px}
+/*登录登出操作*/
+.op_user {float: right; color: #fff; font-size: 18px; border: 1px solid #fff; padding: 1px 12px; cursor: pointer;
+	      text-align: center; line-height: 25px; margin-top: 9px; margin-right: 10px}
+/*图操作*/
+.op {float: left; margin-left: 10px; margin-top: 10px; cursor: pointer;}
+
+/*模态框*/
+.modalBox {position: absolute; top: 30%; width: 500px; height: 200px; left: 34%; z-index: 10;}
+/*模态框内文字*/
+.label {margin: 0 auto;}
+.label .labelText {color: #fff; float: left; font-size: 15px; margin-left: 60px; width: 70px; margin-bottom: 20px;}
+.label input {margin-left: 20px; float: left;}
+	/*历史记录*/
+.record {cursor: pointer;}
