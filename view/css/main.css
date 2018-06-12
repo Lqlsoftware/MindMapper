@@ -32,3 +32,7 @@ path {stroke-width: 4px;}
 .label input {margin-left: 20px; float: left;}
 	/*历史记录*/
 .record {cursor: pointer;}
+	/*团队信息查看*/
+.left {float: left; width: 40%;}
+.right {float: right; width: 50%; margin-bottom: 20px;}
+.project {cursor: pointer;}
