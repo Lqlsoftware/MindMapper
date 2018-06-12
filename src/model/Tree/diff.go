@@ -34,13 +34,13 @@ func (operate MapperNodeOperate)String() string {
 	Different	: []Diff				字符差异
  */
 type MapperNodeDiff struct {
-	Node	 	*TreeNode
-	Operate		MapperNodeOperate
-	Different	[]diffmatchpatch.Diff
+	Node	 	TreeNode	 			`json:"node"`
+	Operate		MapperNodeOperate	 	`json:"operate"`
+	Different	[]diffmatchpatch.Diff 	`json:"different"`
 }
 
 type MapperDiff struct {
-	Nodes		[]MapperNodeDiff
+	Nodes		[]MapperNodeDiff 		`json:"nodes"`
 }
 
 func (diffs *MapperDiff)ToJson() (string,error) {

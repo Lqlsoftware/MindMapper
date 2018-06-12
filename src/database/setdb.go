@@ -1,12 +1,12 @@
-package database
+package main
 
 import (
 	"log"
 
-	"../config"
-	"../model"
-	"../model/Tree"
-	"../model/git"
+	"github.com/Lqlsoftware/mindmapper/src/config"
+	"github.com/Lqlsoftware/mindmapper/src/model"
+	"github.com/Lqlsoftware/mindmapper/src/model/Tree"
+	"github.com/Lqlsoftware/mindmapper/src/model/git"
 	"gopkg.in/mgo.v2"
 )
 

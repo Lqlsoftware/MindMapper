@@ -1,12 +1,18 @@
 package git
 
-import "errors"
+import (
+	"errors"
+
+	"github.com/Lqlsoftware/mindmapper/src/config"
+	"github.com/Lqlsoftware/mindmapper/src/orm"
+	"gopkg.in/mgo.v2/bson"
+)
 
 type Branch struct {
-	Id			int
-	Name		string
-	HeadId		int
-	CommitIds	[]int
+	Id			int		`json:"id"`
+	Name		string	`json:"name"`
+	HeadId		int		`json:"headId"`
+	CommitIds	[]int	`json:"commitIds"`
 	StartTime	uint32
 	EndTime		uint32
 }
@@ -23,6 +29,14 @@ func (branch *Branch)MergeWith(other *Branch) (Commit, error) {
 	}
 
 	// 尝试 Merge 两颗树
+	dstHead.MergeWith(&srcHead)
+	return dstHead, nil
+}
 
+func GetBranchById(id string) (Branch, error) {
+	// 获取分支信息
+	branch := Branch{}
+	err := orm.GetDatabase().C(config.USER_CNAME).Find(bson.M{"Username": username, "Password": password}).One(&user)
 
+	return branch, err
 }
