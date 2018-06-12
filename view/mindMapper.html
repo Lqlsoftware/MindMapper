@@ -533,7 +533,7 @@
 		//判断用户登录情况
 		$.ajax({
 			type: 'GET',
-			url: config + '/user',
+			url: '/user',
 			dataType: 'json',
 			success: function(data) {
 				console.log(data);
@@ -591,7 +591,7 @@
 	save.click(function() {
 		$.ajax({
 			type: 'POST',
-			url: config + '/',
+			url: '/',
 			data: {
 				'tree': listnode
 			},
@@ -635,7 +635,6 @@
 	})
 
 //用户登录系统
-	config = "http://192.168.43.39:8080";
 
 	var login = $('#login');
 	var loginModel = $('.login');
@@ -677,7 +676,7 @@
 		var password = $('#form-last-name').val();
 		$.ajax({
 			type: 'POST',
-			url: config + '/login',
+			url: '/login',
 			data: {
 				'username': username,
 				'password': password
