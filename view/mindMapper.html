@@ -19,7 +19,7 @@
 		<div class="op_user" id="register">注册</div>
 		<div class="op_user" id="login">登录</div>
 		<div class="op_user" id="logout" hidden="hidden">退出</div>
-		<div class="op_user" id="my" hidden="hidden"></div>
+		<div class="op_user" id="my">测试</div>
 	</div>
 	<div class="clearfix"></div>
 	<img class="op" src="img/back.svg" width="24" id="back">
@@ -84,11 +84,52 @@
 	<div class="form-box modalBox historyModel" hidden="hidden">
 		<div class="form-top">
 			<div class="form-top-left">
-				<h3>Here is your history list ： ）</h3>
-	    		<p>never miss what you had done</p>
+				<h3>Here is my history list ： ）</h3>
+	    		<p>never miss what I had done</p>
 			</div>
 	    </div>
 	    <div class="form-bottom historyList" style="color: #fff"></div>
+	</div>
+	<!--团队信息查看-->
+	<div class="form-box modalBox groupHistoryModel" hidden="hidden">
+		<div class="form-top">
+			<div class="form-top-left">
+				<h3>Here is my group!</h3>
+	    		<p>---------------------------------------------------------------</p>
+			</div>
+	    </div>
+	    <div class="form-bottom GroupHistoryList" style="color: #fff">
+	    	<div style="float: left;">comment  time</div>
+	    	<div style="float: right;">submitter</div>
+	    	<div class="clearfix"></div>
+	    </div>
+	</div>
+	<!--团队历史纪录查看-->
+	<div class="form-box modalBox myModel" hidden="hidden">
+		<div class="form-top">
+			<div class="form-top-left">
+				<h3>Welcome to group history!</h3>
+	    		<p>Hey Bro!</p>
+			</div>
+	    </div>
+	    <div class="form-bottom historyList" style="color: #fff">
+	    	<div class="left">Group one</div>
+	    	<div class="right">
+		    	<div class="project">Project one</div>
+		    	<div class="project">Project two</div>
+		    	<div class="project">Project three</div>
+		    	<div class="project">Project four</div>
+		    </div>
+		    <div class="clearfix"></div>
+		    <div class="left">Group two</div>
+	    	<div class="right">
+		    	<div>member one</div>
+		    	<div>member two</div>
+		    	<div>member three</div>
+		    	<div>member four</div>
+		    </div>
+		    <div class="clearfix"></div>
+	    </div>
 	</div>
 	<!--阴影-->
 	<div class="shadow" hidden="hidden"></div>
@@ -629,6 +670,13 @@
 		// })
 	})
 
+	var groupHistoryModel = $('.groupHistoryModel');
+	var project = $('.project');
+	project.click(function() {
+		myModel.css('display','none');
+		groupHistoryModel.css('display','block');
+	})
+
 	var record = $('.record');
 	record.click(function() {
 
@@ -642,6 +690,7 @@
 	var registerModel = $('.register');
 	var logout = $('#logout');
 	var my = $('#my');
+	var myModel = $('.myModel');
 	var shadow = $('.shadow');
 
 	//登录按钮
@@ -663,10 +712,12 @@
 		loginModel.css('display','none');
 		registerModel.css('display','none');
 		historyModel.css('display','none');
+		myModel.css('display','none');
 		shadow.css('display','none');
 	})
 	shadow2.click(function() {
 		historyModel.css('display','none');
+		groupHistoryModel.css('display','none');
 		shadow2.css('display','none');
 	})
 	//登录提交按钮
@@ -722,5 +773,11 @@
 				//location.href = 'error.html';
 			}
 		})
+	})
+
+	my.click(function() {
+		myModel.css('display','block');
+		historyModel.css('display','none');
+		shadow.css('display','block');
 	})
 </script>
