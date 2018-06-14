@@ -36,9 +36,9 @@ func main() {
 		Id:			0,
 		Name:		"admin",
 		AdminId:	0,
-		MemberIds:	[]int{},
+		MemberIds:	[]int{1},
 		State:		1,
-		TeamTreeIds:[]int{},
+		TeamTreeIds:[]int{1},
 	})
 	if err != nil {
 		log.Fatal(err)

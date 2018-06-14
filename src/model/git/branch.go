@@ -3,9 +3,6 @@ package git
 import (
 	"errors"
 
-	"github.com/Lqlsoftware/mindmapper/src/config"
-	"github.com/Lqlsoftware/mindmapper/src/orm"
-	"gopkg.in/mgo.v2/bson"
 )
 
 type Branch struct {
@@ -33,10 +30,10 @@ func (branch *Branch)MergeWith(other *Branch) (Commit, error) {
 	return dstHead, nil
 }
 
-func GetBranchById(id string) (Branch, error) {
-	// 获取分支信息
-	branch := Branch{}
-	err := orm.GetDatabase().C(config.USER_CNAME).Find(bson.M{"Username": username, "Password": password}).One(&user)
-
-	return branch, err
-}
+//func GetBranchById(id string) (Branch, error) {
+//	// 获取分支信息
+//	branch := Branch{}
+//	err := orm.GetDatabase().C(config.USER_CNAME).Find(bson.M{"Username": username, "Password": password}).One(&user)
+//
+//	return branch, err
+//}

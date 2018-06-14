@@ -7,7 +7,7 @@ import (
 
 func init() {
 	orm.InitDB()
-	beego.SetStaticPath("/","/view")
+	beego.SetStaticPath("/static","view")
 	beego.BConfig.WebConfig.Session.SessionOn = true
 	beego.BConfig.WebConfig.Session.SessionName = "gosessionid"
 	bindRouter()
@@ -35,5 +35,5 @@ func main() {
 	//fmt.Println(dstCommit.MergeWith(&commit))
 	//
 	//return
-	beego.Run()
+	//beego.Run()
 }
