@@ -94,22 +94,24 @@
 	<div class="form-box modalBox groupHistoryModel" hidden="hidden">
 		<div class="form-top">
 			<div class="form-top-left">
-				<h3>Here is my group!</h3>
-	    		<p>---------------------------------------------------------------</p>
+				<h3>FUCKING BIRD</h3>
+	    		<p>Here is my group history!</p>
 			</div>
 	    </div>
 	    <div class="form-bottom GroupHistoryList" style="color: #fff">
-	    	<div style="float: left;">comment  time</div>
-	    	<div style="float: right;">submitter</div>
-	    	<div class="clearfix"></div>
+	    	<div class="record">
+		    	<div style="float: left; white-space: pre;">comment    time</div>
+		    	<div style="float: right;">submitter</div>
+		    	<div class="clearfix"></div>
+		    </div>
 	    </div>
 	</div>
 	<!--团队历史纪录查看-->
 	<div class="form-box modalBox myModel" hidden="hidden">
 		<div class="form-top">
 			<div class="form-top-left">
-				<h3>Welcome to group history!</h3>
-	    		<p>Hey Bro!</p>
+				<h3>Hey bro! Your personal info!</h3>
+	    		<p>Select a project</p>
 			</div>
 	    </div>
 	    <div class="form-bottom historyList" style="color: #fff">
@@ -123,10 +125,10 @@
 		    <div class="clearfix"></div>
 		    <div class="left">Group two</div>
 	    	<div class="right">
-		    	<div>member one</div>
-		    	<div>member two</div>
-		    	<div>member three</div>
-		    	<div>member four</div>
+		    	<div>Project one</div>
+		    	<div>Project two</div>
+		    	<div>Project three</div>
+		    	<div>Project four</div>
 		    </div>
 		    <div class="clearfix"></div>
 	    </div>
@@ -654,7 +656,7 @@
 	myHistory.click(function() {
 		historyModel.css('display','block');
 		shadow2.css('display','block');
-		historyList.append('<div class="record">2017.10.10</div>');
+		historyList.append('<div class="record"><div style="float:left">group  project</div><div style="float:right">time</div><div class="clearfix"></div></div>');
 		// $.ajax({
 		// 	type: 'GET',
 		// 	url: '',
@@ -679,7 +681,25 @@
 
 	var record = $('.record');
 	record.click(function() {
-
+		alert('2');
+		$.ajax({
+			type: 'POST',
+			url: '',
+			data: {
+				
+			},
+			crossDomain: true,
+			xhrFields: {
+				withCredentials: true
+			},
+			dataType: 'json',
+			success: function(data) {
+				
+			},
+			error: function(XMLHttpRequest, textStatus, errorThrown) {
+				//location.href = 'error.html';
+			}
+		})
 	})
 
 //用户登录系统
@@ -712,6 +732,7 @@
 		loginModel.css('display','none');
 		registerModel.css('display','none');
 		historyModel.css('display','none');
+		groupHistoryModel.css('display','none');
 		myModel.css('display','none');
 		shadow.css('display','none');
 	})
