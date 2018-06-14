@@ -4,3 +4,4 @@
 # golang
 bin/
 pkg/
+*.exe
