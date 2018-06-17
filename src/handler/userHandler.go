@@ -11,10 +11,10 @@ type UserController struct {
 }
 
 func (this *UserController) Get() {
-	user := this.GetSession("user")
-	if user == nil {
-		this.Ctx.WriteString(utils.GetJsonResult("Not Login", -1, user))
+	user, err := model.GetUser(this)
+	if err != nil {
+		this.Ctx.WriteString(utils.GetJsonResult("Not Login", -1, nil))
 	} else {
-		this.Ctx.WriteString(utils.GetJsonResult("Welcome Back", 1, user.(model.User)))
+		this.Ctx.WriteString(utils.GetJsonResult("Welcome Back", 1, user))
 	}
 }

@@ -3,6 +3,9 @@ package git
 import (
 	"errors"
 
+	"github.com/Lqlsoftware/mindmapper/src/config"
+	"github.com/Lqlsoftware/mindmapper/src/orm"
+	"gopkg.in/mgo.v2/bson"
 )
 
 type Branch struct {
@@ -10,8 +13,8 @@ type Branch struct {
 	Name		string	`json:"name"`
 	HeadId		int		`json:"headId"`
 	CommitIds	[]int	`json:"commitIds"`
-	StartTime	uint32
-	EndTime		uint32
+	StartTime	uint32	`json:"startTime"`
+	EndTime		uint32	`json:"endTime"`
 }
 
 func (branch *Branch)MergeWith(other *Branch) (Commit, error) {
@@ -30,10 +33,12 @@ func (branch *Branch)MergeWith(other *Branch) (Commit, error) {
 	return dstHead, nil
 }
 
-//func GetBranchById(id string) (Branch, error) {
-//	// 获取分支信息
-//	branch := Branch{}
-//	err := orm.GetDatabase().C(config.USER_CNAME).Find(bson.M{"Username": username, "Password": password}).One(&user)
-//
-//	return branch, err
-//}
+func GetLastBranchId() int {
+	branch := Branch{}
+	err := orm.GetDatabase().C(config.BRANCHSET_CNAME).Find(bson.M{"id":"$max"}).One(&branch)
+	if err != nil {
+		return 1
+	} else {
+		return branch.Id + 1
+	}
+}

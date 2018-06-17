@@ -30,15 +30,13 @@ func (commit *Commit)Save() error {
 
 func GetLastCommitId() int {
 	commit := Commit{}
-	id := 1
 	commits := orm.GetDatabase().C(config.COMMIT_CNAME)
 	err := commits.Find(bson.M{"id":"$max"}).One(&commit)
 	if err != nil {
-		id = 1
+		return 1
 	} else {
-		id = commit.Id + 1
+		return commit.Id + 1
 	}
-	return id
 }
 
 type Conflict struct {

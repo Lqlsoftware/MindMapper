@@ -1,23 +1,20 @@
 package handler
 
 import (
+	"github.com/Lqlsoftware/mindmapper/src/utils"
 	"github.com/astaxie/beego"
 )
 
 type BranchController struct {
 	beego.Controller
 }
-//
-//func (this *BranchController) GET() {
-//	branchId := this.GetString("branchId")
-//
-//	user, err := model.VaildUser(username, password)
-//	if err != nil {
-//		// return msg
-//		this.Ctx.WriteString(utils.GetJsonResult("login failed", -1, nil))
-//	}
-//	// save to session
-//	this.SetSession("user", user)
-//	// return msg
-//	this.Ctx.WriteString(utils.GetJsonResult("login success", 1, user))
-//}
+
+func (this *BranchController) Get() {
+	user := this.GetSession("user")
+	if user == nil {
+		this.Ctx.WriteString(utils.GetJsonResult("Not Login", -1, user))
+		return
+	}
+
+	//branchId := this.GetString("branchId")
+}
