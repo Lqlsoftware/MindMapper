@@ -41,7 +41,7 @@ func (branchSet *BranchSet)Save() error {
 
 func GetLastProjectId() int {
 	branchSet := BranchSet{}
-	err := orm.GetDatabase().C(config.BRANCHSET_CNAME).Find(bson.M{"treeId":"$max"}).One(&branchSet)
+	err := orm.GetDatabase().C(config.BRANCHSET_CNAME).Find(bson.M{"treeid":"$max"}).One(&branchSet)
 	if err != nil {
 		return 1
 	} else {
