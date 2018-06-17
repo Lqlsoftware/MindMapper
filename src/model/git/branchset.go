@@ -40,19 +40,19 @@ func (branchSet *BranchSet)Save() error {
 }
 
 func GetLastProjectId() int {
-	branchSet := BranchSet{}
-	err := orm.GetDatabase().C(config.BRANCHSET_CNAME).Find(bson.M{"treeid":"$max"}).One(&branchSet)
+	branchset := BranchSet{}
+	err := orm.GetDatabase().C(config.BRANCHSET_CNAME).Find(bson.M{"treeid":bson.M{"$gt":0}}).Sort("-treeid").Limit(1).One(&branchset)
 	if err != nil {
 		return 1
 	} else {
-		return branchSet.TreeId + 1
+		return branchset.TreeId + 1
 	}
 }
 
 func NewBranchSet(name string, userId int) BranchSet {
 	pid := GetLastProjectId()
 
-	// orign commmit
+	// origin commit
 	commit := Commit{
 		Id:			GetLastCommitId(),
 		Diff:		Tree.MapperDiff{

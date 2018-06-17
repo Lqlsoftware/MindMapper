@@ -45,7 +45,7 @@ func NewBranch(pid int, name string) Branch {
 		return Branch{}
 	}
 
-	err = orm.GetDatabase().C(config.BRANCHSET_CNAME).Update(bson.M{"treeid":pid},bson.M{"BranchIds":append(project.BranchIds, branch.Id)})
+	err = orm.GetDatabase().C(config.BRANCHSET_CNAME).Update(bson.M{"treeid":pid},bson.M{"set":bson.M{"BranchIds":append(project.BranchIds, branch.Id)}})
 	if err != nil {
 		return Branch{}
 	}
@@ -70,7 +70,7 @@ func (branch *Branch)MergeWith(other *Branch) (Commit, error) {
 
 func GetLastBranchId() int {
 	branch := Branch{}
-	err := orm.GetDatabase().C(config.BRANCHSET_CNAME).Find(bson.M{"id":"$max"}).One(&branch)
+	err := orm.GetDatabase().C(config.BRANCH_CNAME).Find(bson.M{"id":bson.M{"$gt":0}}).Sort("-id").Limit(1).One(&branch)
 	if err != nil {
 		return 1
 	} else {

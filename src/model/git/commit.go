@@ -30,8 +30,7 @@ func (commit *Commit)Save() error {
 
 func GetLastCommitId() int {
 	commit := Commit{}
-	commits := orm.GetDatabase().C(config.COMMIT_CNAME)
-	err := commits.Find(bson.M{"id":"$max"}).One(&commit)
+	err := orm.GetDatabase().C(config.COMMIT_CNAME).Find(bson.M{"id":bson.M{"$gt":0}}).Sort("-id").Limit(1).One(&commit)
 	if err != nil {
 		return 1
 	} else {
