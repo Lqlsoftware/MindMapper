@@ -19,7 +19,7 @@
 		<div class="op_user" id="register">注册</div>
 		<div class="op_user" id="login">登录</div>
 		<div class="op_user" id="logout" hidden="hidden">退出</div>
-		<div class="op_user" id="my">测试</div>
+		<div class="op_user" id="my" hidden="hidden">测试</div>
 	</div>
 	<div class="clearfix"></div>
 	<img class="op" src="img/back.svg" width="24" id="back">
@@ -169,8 +169,8 @@
 		this.edgeNum = 0;
 		//节点文字
 		this.text = null;
-		//节点点击
-		this.click = false;
+		//节点在子树中的位置
+		this.rank = 0;
 		//文字设置于提取
 		this.setText = function(text) {
 			this.text = text;
@@ -216,6 +216,7 @@
 			if (this.edgeNum > 0)
 				newNode.setPreBro(this.children[this.edgeNum-1]);
 			this.edgeNum += 1;
+			newNode.rank=this.edgeNum;
 			//如果通过图操作改变了模型树的状态，还需要改变链表的状态
 			if (option == 0) {
 				optionList.remove(optionList.currentNode);
@@ -632,21 +633,40 @@
 	//将思维导图上传至服务器
 	var save = $('#save');
 	save.click(function() {
-		$.ajax({
-			type: 'POST',
-			url: '/',
-			data: {
-				'tree': listnode
-			},
-			dataType: 'json',
-			success: function(data) {
+		var tree = convertNodeListToSavedTree(nodeList);
+		// $.ajax({
+		// 	type: 'POST',
+		// 	url: '/commit',
+		// 	data: {
+		// 		'tree': convertTreeToModelTree(nodeList);
+		// 	},
+		// 	dataType: 'json',
+		// 	success: function(data) {
 
-			},
-			error: function(XMLHttpRequest, textStatus, errorThrown) {
-				//location.href = 'error.html';
-			}
-		})
+		// 	},
+		// 	error: function(XMLHttpRequest, textStatus, errorThrown) {
+		// 		//location.href = 'error.html';
+		// 	}
+		// })
 	})
+
+	var convertNodeListToSavedTree = function(nodeList) {
+		var tree = [];
+		for (var i = 0; i < nodeList.length; i++) {
+			var saveNode;
+			//存储当前节点的必要信息
+			saveNode = {
+				idx: nodeList[i].index,
+				father: nodeList[i].parent==null?-1:nodeList[i].parent.index,
+				rank: nodeList[i].rank,
+				edgeNum: nodeList[i].edgeNum,
+				value: 'null'
+			}
+			tree.push(saveNode);
+		}
+		console.log(tree);
+		return tree;
+	}
 
 	var shadow2 = $('.shadow2');
 	//获取历史纪录
@@ -671,36 +691,53 @@
 		// 	}
 		// })
 	})
-
+	//显示工程条目
 	var groupHistoryModel = $('.groupHistoryModel');
 	var project = $('.project');
 	project.click(function() {
 		myModel.css('display','none');
 		groupHistoryModel.css('display','block');
 	})
-
+	//显示具体的历史记录条目，点击获取对应的树
 	var record = $('.record');
 	record.click(function() {
-		alert('2');
 		$.ajax({
-			type: 'POST',
-			url: '',
-			data: {
-				
-			},
+			type: 'GET',
+			url: '/login',
 			crossDomain: true,
 			xhrFields: {
 				withCredentials: true
 			},
 			dataType: 'json',
 			success: function(data) {
-				
+				var tree = data.data.tree.tree;
+				var modelTree = convertTreeToModelTree(tree);
+				console.log(tree);
 			},
 			error: function(XMLHttpRequest, textStatus, errorThrown) {
 				//location.href = 'error.html';
 			}
 		})
 	})
+	//将从后台拉取的数组转换成模型树
+	var convertTreeToModelTree = function(tree) {
+		var historyNodeList = [];
+		var historyRoot = new node(null);
+		historyNodeList.push(historyRoot);
+		for (var i = 1; i < tree.length; i++) {
+			//设置父节点
+			var historyNode = new node(historyNodeList[tree[i].father]);
+			historyNode.index = tree[i].rank;
+			historyNode.rank = tree[i].rank;
+			// historyNode.edgeNum = tree[i].edgeNum;
+			// historyNode.text = tree[i].value;
+		}
+	}
+
+	//绘制历史思维导图
+	var printHistoryGraph = function(modelTree) {
+		
+	}
 
 //用户登录系统
 
