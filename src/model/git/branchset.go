@@ -23,6 +23,15 @@ func GetBranchSets(userId int) []BranchSet {
 	return branchSets
 }
 
+func GetBranchSet(pid int) BranchSet {
+	var branchSet BranchSet
+	err := orm.GetDatabase().C(config.BRANCHSET_CNAME).Find(bson.M{"treeid":pid}).One(&branchSet)
+	if err != nil {
+		return BranchSet{}
+	}
+	return branchSet
+}
+
 func (branchSet *BranchSet)Save() error {
 	return orm.GetDatabase().C(config.BRANCHSET_CNAME).Insert(branchSet)
 }

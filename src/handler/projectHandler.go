@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"errors"
+
 	"github.com/Lqlsoftware/mindmapper/src/model"
 	"github.com/Lqlsoftware/mindmapper/src/model/git"
 	"github.com/Lqlsoftware/mindmapper/src/utils"
@@ -12,7 +14,7 @@ type ProjectController struct {
 }
 
 func (this *ProjectController) Get() {
-	user, err := model.GetUser(this)
+	user, err := this.GetUser()
 	if err != nil {
 		this.Ctx.WriteString(utils.GetJsonResult("Not Login", -1, nil))
 		return
@@ -24,7 +26,7 @@ func (this *ProjectController) Get() {
 }
 
 func (this *ProjectController) Post() {
-	user, err := model.GetUser(this)
+	user, err := this.GetUser()
 	if err != nil {
 		this.Ctx.WriteString(utils.GetJsonResult("Not Login", -1, nil))
 		return
@@ -33,4 +35,13 @@ func (this *ProjectController) Post() {
 	name := this.GetString("name")
 	project := git.NewBranchSet(name, user.Id)
 	this.Ctx.WriteString(utils.GetJsonResult("new project", 1, project))
+}
+
+func (this *ProjectController)GetUser() (model.User, error) {
+	user := this.GetSession("user")
+	if user == nil {
+		return model.User{}, errors.New("not login")
+	} else {
+		return user.(model.User), nil
+	}
 }

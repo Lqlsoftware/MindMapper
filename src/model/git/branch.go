@@ -2,6 +2,7 @@ package git
 
 import (
 	"errors"
+	"time"
 
 	"github.com/Lqlsoftware/mindmapper/src/config"
 	"github.com/Lqlsoftware/mindmapper/src/orm"
@@ -13,8 +14,42 @@ type Branch struct {
 	Name		string	`json:"name"`
 	HeadId		int		`json:"headId"`
 	CommitIds	[]int	`json:"commitIds"`
-	StartTime	uint32	`json:"startTime"`
-	EndTime		uint32	`json:"endTime"`
+	StartTime	int64	`json:"startTime"`
+	EndTime		int64	`json:"endTime"`
+}
+
+func GetBranch(branchId int) Branch {
+	branch := Branch{}
+	err := orm.GetDatabase().C(config.BRANCHSET_CNAME).Find(bson.M{"id":branchId}).One(&branch)
+	if err != nil {
+		return Branch{}
+	} else {
+		return branch
+	}
+}
+
+func NewBranch(pid int, name string) Branch {
+	project := GetBranchSet(pid)
+	master := GetBranch(project.MainBranchId)
+	branch := Branch{
+		Id:			GetLastBranchId(),
+		Name: 		name,
+		HeadId: 	master.HeadId,
+		CommitIds:	[]int{master.HeadId},
+		StartTime: 	time.Now().Unix(),
+		EndTime:	-1,
+	}
+
+	err := branch.Save()
+	if err != nil {
+		return Branch{}
+	}
+
+	err = orm.GetDatabase().C(config.BRANCHSET_CNAME).Update(bson.M{"treeid":pid},bson.M{"BranchIds":append(project.BranchIds, branch.Id)})
+	if err != nil {
+		return Branch{}
+	}
+	return branch
 }
 
 func (branch *Branch)MergeWith(other *Branch) (Commit, error) {
@@ -41,4 +76,8 @@ func GetLastBranchId() int {
 	} else {
 		return branch.Id + 1
 	}
+}
+
+func (branch *Branch)Save() error {
+	return orm.GetDatabase().C(config.BRANCH_CNAME).Insert(branch)
 }
