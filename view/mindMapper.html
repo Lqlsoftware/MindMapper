@@ -22,13 +22,11 @@
 		<div class="op_user" id="my" hidden="hidden">测试</div>
 	</div>
 	<div class="clearfix"></div>
+	<!--操作项-->
 	<img class="op" src="img/back.svg" width="24" id="back">
 	<img class="op" src="img/right.svg" width="24" id="forward">
 	<img class="op" src="img/form.svg" width="24" id="save">
 	<img class="op" src="img/apps.svg" width="24" id="history">
-
-	<!--历史记录弹窗-->
-	
 	
 	<!--登录弹窗-->
 	<div class="form-box modalBox login" hidden="hidden">
@@ -80,58 +78,41 @@
             <button class="btn" id="registerSubimt">Register!</button>
 	    </div>
 	</div>
-	<!--历史记录弹窗-->
-	<div class="form-box modalBox historyModel" hidden="hidden">
+	<!--我参加的项目弹窗-->
+	<div class="form-box modalBox myProjectModel" hidden="hidden">
 		<div class="form-top">
-			<div class="form-top-left">
-				<h3>Here is my history list ： ）</h3>
-	    		<p>never miss what I had done</p>
+			<div class="form-top-left" style="width: 100%">
+				<h3>我参加的项目</h3>
+	    		<div style="color:#fff;cursor:pointer;display:inline-block;float:right;" id="newProject">新建一个项目</div>
+	    		<div style="color:#fff;cursor:pointer;display:inline-block;float:right;margin-right: 20px;">加入一个项目</div> 
 			</div>
 	    </div>
-	    <div class="form-bottom historyList" style="color: #fff"></div>
+	    <div class="form-bottom projectList" style="color: #fff"></div>
 	</div>
-	<!--团队信息查看-->
-	<div class="form-box modalBox groupHistoryModel" hidden="hidden">
+	<!--项目主分支查看-->
+	<div class="form-box modalBox mainBranchModel" hidden="hidden">
 		<div class="form-top">
-			<div class="form-top-left">
-				<h3>FUCKING BIRD</h3>
-	    		<p>Here is my group history!</p>
+			<div class="form-top-left" style="width: 100%">
+				<h3>XX项目主分支</h3>
+	    		<div style="color:#fff;cursor:pointer;display:inline-block;float:right;" id="checkMyBranch">查看我的该项目分支</div>
+	    		<div style="color:#fff;cursor:pointer;display:inline-block;float:right;margin-right: 20px;" id="newBranch">新建一个分支</div>
 			</div>
 	    </div>
-	    <div class="form-bottom GroupHistoryList" style="color: #fff">
-	    	<div class="record">
-		    	<div style="float: left; white-space: pre;">comment    time</div>
-		    	<div style="float: right;">submitter</div>
-		    	<div class="clearfix"></div>
-		    </div>
+	    <div class="form-bottom mainBranchList" style="color: #fff"></div>
+	</div>
+	<!--我的项目分支查看-->
+	<div class="form-box modalBox myBranchModel" hidden="hidden">
+		<div class="form-top">
+			<div class="form-top-left" style="width: 100%">
+				<h3>我的XX项目分支</h3>
+				<div style="color:#fff;cursor:pointer;display:inline-block;float:right;" id="backToMainbranch">返回主分支</div>
+			</div>
+	    </div>
+	    <div class="form-bottom myBranchList" style="color: #fff">
 	    </div>
 	</div>
-	<!--团队历史纪录查看-->
-	<div class="form-box modalBox myModel" hidden="hidden">
-		<div class="form-top">
-			<div class="form-top-left">
-				<h3>Hey bro! Your personal info!</h3>
-	    		<p>Select a project</p>
-			</div>
-	    </div>
-	    <div class="form-bottom historyList" style="color: #fff">
-	    	<div class="left">Group one</div>
-	    	<div class="right">
-		    	<div class="project">Project one</div>
-		    	<div class="project">Project two</div>
-		    	<div class="project">Project three</div>
-		    	<div class="project">Project four</div>
-		    </div>
-		    <div class="clearfix"></div>
-		    <div class="left">Group two</div>
-	    	<div class="right">
-		    	<div>Project one</div>
-		    	<div>Project two</div>
-		    	<div>Project three</div>
-		    	<div>Project four</div>
-		    </div>
-		    <div class="clearfix"></div>
-	    </div>
+	<div class="modalBox inputModel" hidden="hidden">
+		<input type="text" name="" placeholder="输入工程名" id="inputContent">
 	</div>
 	<!--阴影-->
 	<div class="shadow" hidden="hidden"></div>
@@ -573,7 +554,7 @@
 		optionList.head = new listnode(0,nodeList[0]);
 		optionList.currentNode = optionList.head;
 		print();
-
+testConvert();
 		//判断用户登录情况
 		$.ajax({
 			type: 'GET',
@@ -586,7 +567,7 @@
 					register.css('display','none');
 					logout.css('display','block');
 					my.css('display','block');
-					my.html(data.data.username);
+					my.html(data.data[0].username);
 				}
 			},
 			error: function(XMLHttpRequest, textStatus, errorThrown) {
@@ -630,6 +611,7 @@
 			default: break;
 		}
 	})
+	//前方大量AJAX出没
 	//将思维导图上传至服务器
 	var save = $('#save');
 	save.click(function() {
@@ -638,11 +620,11 @@
 		// 	type: 'POST',
 		// 	url: '/commit',
 		// 	data: {
-		// 		'tree': convertTreeToModelTree(nodeList);
+		// 		'tree': convertNodeListToSavedTree(nodeList)
 		// 	},
 		// 	dataType: 'json',
 		// 	success: function(data) {
-
+		// 		console.log('success');
 		// 	},
 		// 	error: function(XMLHttpRequest, textStatus, errorThrown) {
 		// 		//location.href = 'error.html';
@@ -668,56 +650,201 @@
 		return tree;
 	}
 
+	//不覆盖图标的阴影
 	var shadow2 = $('.shadow2');
 	//获取历史纪录
 	var myHistory = $('#history');
-	var historyModel = $('.historyModel');
-	var historyList = $('.historyList');
+	var myProjectModel = $('.myProjectModel');
+	var projectList = $('.projectList');
+	var mainBranchModel = $('.mainBranchModel');
+	var mainBranchList = $('.mainBranchList');
+	var myBranchModel = $('.myBranchModel');
+	var myBranchList = $('.myBranchList');
+	//点击第四个按钮进入我的项目列表
 	myHistory.click(function() {
-		historyModel.css('display','block');
+		myProjectModel.css('display','block');
 		shadow2.css('display','block');
-		historyList.append('<div class="record"><div style="float:left">group  project</div><div style="float:right">time</div><div class="clearfix"></div></div>');
-		// $.ajax({
-		// 	type: 'GET',
-		// 	url: '',
-		// 	dataType: 'json',
-		// 	success: function(data) {
-		// 		//historyList.append('');
-		// 		historyModel.css('display','block');
-		// 		shadow.css('display','block');
-		// 	},
-		// 	error: function(XMLHttpRequest, textStatus, errorThrown) {
-		// 		//location.href = 'error.html';
-		// 	}
-		// })
-	})
-	//显示工程条目
-	var groupHistoryModel = $('.groupHistoryModel');
-	var project = $('.project');
-	project.click(function() {
-		myModel.css('display','none');
-		groupHistoryModel.css('display','block');
-	})
-	//显示具体的历史记录条目，点击获取对应的树
-	var record = $('.record');
-	record.click(function() {
+		mainBranchModel.css('display','none');
+		myBranchModel.css('display','none');
+		projectList.html('');
 		$.ajax({
 			type: 'GET',
-			url: '/login',
-			crossDomain: true,
-			xhrFields: {
-				withCredentials: true
-			},
+			url: '/project',
 			dataType: 'json',
 			success: function(data) {
-				var tree = data.data.tree.tree;
-				var modelTree = convertTreeToModelTree(tree);
-				console.log(tree);
+				console.log(data);
+				var html = '';
+				// for (var i = 0; i < data.data[0].length; i++) {
+
+				// }
 			},
 			error: function(XMLHttpRequest, textStatus, errorThrown) {
 				//location.href = 'error.html';
 			}
 		})
+		//点击该项目进入该项目的主分支提交记录列表---该代码在新建项目中还有一段拷贝
+		var project = $('.project');
+		project.click(function() {
+			myProjectModel.css('display','none');
+			mainBranchModel.css('display','block');
+			mainBranchList.html('<div class="mainBranch"><div class="left">2017.8.8 10:24   更新</div><div class="right">demonhub</div><div class="clearfix"></div></div>');
+			// $.ajax({
+			// 	type: 'GET',
+			// 	url: '',
+			// 	dataType: 'json',
+			// 	success: function(data) {
+
+			// 	},
+			// 	error: function(XMLHttpRequest, textStatus, errorThrown) {
+			// 		//location.href = 'error.html';
+			// 	}
+			// })
+			//点击该主分支中的记录显示该记录对应的思维导图并给出差异
+			var mainBranch = $('.mainBranch');
+			mainBranch.click(function() {
+				// $.ajax({
+				// 	type: 'GET',
+				// 	url: '',
+				// 	dataType: 'json',
+				// 	success: function(data) {
+
+				// 	},
+				// 	error: function(XMLHttpRequest, textStatus, errorThrown) {
+				// 		//location.href = 'error.html';
+				// 	}
+				// })
+			})
+		})
+	})
+	//点击查看我的分支
+	$('#checkMyBranch').click(function() {
+		mainBranchModel.css('display','none');
+		myBranchModel.css('display','block');
+		myBranchList.html('<div class="myBranch"><div class="left">2017.8.8 10:24   更新</div><div class="right merge">merge</div><div class="clearfix"></div></div>');
+		// $.ajax({
+		// 	type: 'GET',
+		// 	url: '',
+		// 	dataType: 'json',
+		// 	success: function(data) {
+
+		// 	},
+		// 	error: function(XMLHttpRequest, textStatus, errorThrown) {
+		// 		//location.href = 'error.html';
+		// 	}
+		// })
+		//点击该我的分支中的记录显示该记录对应的思维导图并给出差异
+		var myBranch = $('.myBranch');
+		myBranch.click(function() {
+			// type: 'GET',
+			// url: '/login',
+			// crossDomain: true,
+			// xhrFields: {
+			// 	withCredentials: true
+			// },
+			// dataType: 'json',
+			// success: function(data) {
+			// 	var tree = data.data.tree.tree;
+			// 	var modelTree = convertTreeToModelTree(tree);
+			// 	console.log(tree);
+			// },
+			// error: function(XMLHttpRequest, textStatus, errorThrown) {
+			// 	//location.href = 'error.html';
+			// }
+		})
+		//将我的分支合并到主分支中
+		var merge = $('.merge');
+		merge.click(function() {
+			// $.ajax({
+			// 	type: 'POST',
+			// 	url: '',
+			// 	dataType: 'json',
+			// 	success: function(data) {
+
+			// 	},
+			// 	error: function(XMLHttpRequest, textStatus, errorThrown) {
+			// 		//location.href = 'error.html';
+			// 	}
+			// })
+		})
+	})
+	//我的分支菜单，返回到主分支菜单
+	$('#backToMainbranch').click(function() {
+		mainBranchModel.css('display','block');
+		myBranchModel.css('display','none');
+	})
+	//新建一个项目
+	$('#newProject').click(function() {
+		//项目名
+		var name;
+		$('.inputModel').css('display','block');
+		document.onkeydown=function(event){
+		    var e = event || window.event || arguments.callee.caller.arguments[0];
+		    if(e && e.keyCode==13){
+		         name = $('#inputContent').val();
+		         $('.inputModel').css('display','none');
+		         $.ajax({
+					type: 'POST',
+					url: '/project',
+					data: {'name': name},
+					dataType: 'json',
+					success: function(data) {
+						console.log(data);
+						var html = projectList.html();
+						html = html + '<div class="project"><img src="img/Category.png" width="20">'+name+'</div>';
+						projectList.html(html);
+						//点击该项目进入该项目的主分支提交记录列表
+						var project = $('.project');
+						project.click(function() {
+							myProjectModel.css('display','none');
+							mainBranchModel.css('display','block');
+							mainBranchList.html('<div class="mainBranch"><div class="left">2017.8.8 10:24   更新</div><div class="right">demonhub</div><div class="clearfix"></div></div>');
+							// $.ajax({
+							// 	type: 'GET',
+							// 	url: '',
+							// 	dataType: 'json',
+							// 	success: function(data) {
+
+							// 	},
+							// 	error: function(XMLHttpRequest, textStatus, errorThrown) {
+							// 		//location.href = 'error.html';
+							// 	}
+							// })
+							//点击该主分支中的记录显示该记录对应的思维导图并给出差异
+							var mainBranch = $('.mainBranch');
+							mainBranch.click(function() {
+								// $.ajax({
+								// 	type: 'GET',
+								// 	url: '',
+								// 	dataType: 'json',
+								// 	success: function(data) {
+
+								// 	},
+								// 	error: function(XMLHttpRequest, textStatus, errorThrown) {
+								// 		//location.href = 'error.html';
+								// 	}
+								// })
+							})
+						})
+					},
+					error: function(XMLHttpRequest, textStatus, errorThrown) {
+						//location.href = 'error.html';
+					}
+				})
+		    }
+	    }; 
+	})
+	$('#newBranch').click(function() {
+		// $.ajax({
+		// 	type: 'POST',
+		// 	url: '',
+		// 	dataType: 'json',
+		// 	success: function(data) {
+
+		// 	},
+		// 	error: function(XMLHttpRequest, textStatus, errorThrown) {
+		// 		//location.href = 'error.html';
+		// 	}
+		// })
 	})
 	//将从后台拉取的数组转换成模型树
 	var convertTreeToModelTree = function(tree) {
@@ -727,20 +854,42 @@
 		for (var i = 1; i < tree.length; i++) {
 			//设置父节点
 			var historyNode = new node(historyNodeList[tree[i].father]);
-			historyNode.index = tree[i].rank;
+			historyNode.index = tree[i].idx;
 			historyNode.rank = tree[i].rank;
 			// historyNode.edgeNum = tree[i].edgeNum;
 			// historyNode.text = tree[i].value;
 		}
 	}
-
+	//后台数组到模型树转换测试
+	var testConvert = function() {
+		//自定义树
+		var tree = [{idx: 0,father: -1,prebro: -1,edgeNum: 2,rank: 1,value: "null"},
+					{idx: 1,father: 0,prebro: -1,edgeNum: 0,rank: 1,value: "null"},
+					{idx: 2,father: 0,prebro: 1,edgeNum: 0,value: "null"}];
+		var historyNodeList = [];
+		for (var i = 0; i < tree.length; i++) {
+			//设置父节点
+			var historyNode = new node(i==0?null:historyNodeList[tree[i].father]);
+			historyNode.index = tree[i].idx;
+			historyNode.prebro = historyNodeList[tree[i].prebro];
+			historyNode.edgeNum = tree[i].edgeNum;
+			historyNode.rank = tree[i].rank;
+			//还需要给节点父亲设置children[x]----在calcSpace中使用
+			if (i != 0) 
+				historyNodeList[tree[i].father].children[historyNode.rank-1] = historyNode;
+			// historyNode.text = tree[i].value;
+			historyNodeList.push(historyNode);
+		}
+		console.log(historyNodeList);
+	}
 	//绘制历史思维导图
 	var printHistoryGraph = function(modelTree) {
-		
+		//绘制根节点
+		calcSpace(historyNodeList[0]);
+		updateLocation(historyNodeList[0]);
 	}
 
 //用户登录系统
-
 	var login = $('#login');
 	var loginModel = $('.login');
 	var register = $('#register');
@@ -754,28 +903,24 @@
 	login.click(function() {
 		loginModel.css('display','block');
 		registerModel.css('display','none');
-		historyModel.css('display','none');
 		shadow.css('display','block');
 	})	
 	//注册按钮
 	register.click(function() {
 		registerModel.css('display','block');
 		loginModel.css('display','none');
-		historyModel.css('display','none');
 		shadow.css('display','block');
 	})
 	//点击模态框外空间隐藏模态框
 	shadow.click(function() {
 		loginModel.css('display','none');
 		registerModel.css('display','none');
-		historyModel.css('display','none');
-		groupHistoryModel.css('display','none');
-		myModel.css('display','none');
 		shadow.css('display','none');
 	})
 	shadow2.click(function() {
-		historyModel.css('display','none');
-		groupHistoryModel.css('display','none');
+		myProjectModel.css('display','none');
+		mainBranchModel.css('display','none');
+		myBranchModel.css('display','none');
 		shadow2.css('display','none');
 	})
 	//登录提交按钮
@@ -800,7 +945,7 @@
 				register.css('display','none');
 				logout.css('display','block');
 				my.css('display','block');
-				my.html(data.data.username);
+				my.html(data.data[0].username);
 				loginModel.css('display','none');
 				shadow.css('display','none');
 			},
@@ -832,10 +977,8 @@
 			}
 		})
 	})
+	//登出
+	$('#logout').click(function() {
 
-	my.click(function() {
-		myModel.css('display','block');
-		historyModel.css('display','none');
-		shadow.css('display','block');
 	})
 </script>

@@ -26,6 +26,8 @@ path {stroke-width: 4px;}
 
 /*模态框*/
 .modalBox {position: absolute; top: 30%; width: 500px; height: 200px; left: 34%; z-index: 10;}
+/*输入模态框*/
+.inputModel {top: 40%}
 /*模态框内文字*/
 .label {margin: 0 auto;}
 .label .labelText {color: #fff; float: left; font-size: 15px; margin-left: 60px; width: 70px; margin-bottom: 20px;}
@@ -33,6 +35,9 @@ path {stroke-width: 4px;}
 	/*历史记录*/
 .record {cursor: pointer;}
 	/*团队信息查看*/
-.left {float: left; width: 40%;}
-.right {float: right; width: 50%; margin-bottom: 20px;}
+.left {float: left; white-space: pre}
+.right {float: right;}
 .project {cursor: pointer;}
+.project img {margin-right: 10px;}
+.mainBranch {cursor: pointer;}
+.myBranch {cursor: pointer;}
