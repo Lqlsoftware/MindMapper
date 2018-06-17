@@ -84,7 +84,7 @@
 			<div class="form-top-left" style="width: 100%">
 				<h3>我参加的项目</h3>
 	    		<div style="color:#fff;cursor:pointer;display:inline-block;float:right;" id="newProject">新建一个项目</div>
-	    		<div style="color:#fff;cursor:pointer;display:inline-block;float:right;margin-right: 20px;">加入一个项目</div> 
+	    		<!-- <div style="color:#fff;cursor:pointer;display:inline-block;float:right;margin-right: 20px;">加入一个项目</div>  -->
 			</div>
 	    </div>
 	    <div class="form-bottom projectList" style="color: #fff"></div>
@@ -113,6 +113,9 @@
 	</div>
 	<div class="modalBox inputModel" hidden="hidden">
 		<input type="text" name="" placeholder="输入工程名" id="inputContent">
+	</div>
+	<div class="modalBox inputModel2" hidden="hidden">
+		<input type="text" name="" placeholder="输入分支名" id="inputContent2">
 	</div>
 	<!--阴影-->
 	<div class="shadow" hidden="hidden"></div>
@@ -611,6 +614,12 @@ testConvert();
 			default: break;
 		}
 	})
+
+	////////////////////////////////////////////////////////////
+	//全局变量
+	var currentTreeId;
+	///////////////////////////////////////////////////////////
+
 	//前方大量AJAX出没
 	//将思维导图上传至服务器
 	var save = $('#save');
@@ -674,46 +683,51 @@ testConvert();
 			success: function(data) {
 				console.log(data);
 				var html = '';
-				// for (var i = 0; i < data.data[0].length; i++) {
+				for (var i = 0; data.data[0] != null && i < data.data[0].length; i++) {
+					html += '<div class="project"><img src="img/Category.png" width="20">'+data.data[0][i].name+'</div>';
+				}
+				projectList.html(html);
+				///////////////////////////分割//////////////////////
+				//点击该项目进入该项目的主分支提交记录列表---该代码在新建项目中还有一段拷贝
+				var project = $('.project');
+				project.click(function() {
+					var index = project.index(this);
+					currentTreeId = data.data[0][index].treeId;
+					myProjectModel.css('display','none');
+					mainBranchModel.css('display','block');
+					mainBranchList.html('<div class="mainBranch"><div class="left">2017.8.8 10:24   更新</div><div class="right">demonhub</div><div class="clearfix"></div></div>');
+					$.ajax({
+						type: 'GET',
+						url: '/branch',
+						data: {'id': currentTreeId},
+						dataType: 'json',
+						success: function(data) {
+							console.log(data);
+						},
+						error: function(XMLHttpRequest, textStatus, errorThrown) {
+							//location.href = 'error.html';
+						}
+					})
+					//点击该主分支中的记录显示该记录对应的思维导图并给出差异
+					var mainBranch = $('.mainBranch');
+					mainBranch.click(function() {
+						// $.ajax({
+						// 	type: 'GET',
+						// 	url: '',
+						// 	dataType: 'json',
+						// 	success: function(data) {
 
-				// }
+						// 	},
+						// 	error: function(XMLHttpRequest, textStatus, errorThrown) {
+						// 		//location.href = 'error.html';
+						// 	}
+						// })
+					})
+				})
 			},
 			error: function(XMLHttpRequest, textStatus, errorThrown) {
 				//location.href = 'error.html';
 			}
-		})
-		//点击该项目进入该项目的主分支提交记录列表---该代码在新建项目中还有一段拷贝
-		var project = $('.project');
-		project.click(function() {
-			myProjectModel.css('display','none');
-			mainBranchModel.css('display','block');
-			mainBranchList.html('<div class="mainBranch"><div class="left">2017.8.8 10:24   更新</div><div class="right">demonhub</div><div class="clearfix"></div></div>');
-			// $.ajax({
-			// 	type: 'GET',
-			// 	url: '',
-			// 	dataType: 'json',
-			// 	success: function(data) {
-
-			// 	},
-			// 	error: function(XMLHttpRequest, textStatus, errorThrown) {
-			// 		//location.href = 'error.html';
-			// 	}
-			// })
-			//点击该主分支中的记录显示该记录对应的思维导图并给出差异
-			var mainBranch = $('.mainBranch');
-			mainBranch.click(function() {
-				// $.ajax({
-				// 	type: 'GET',
-				// 	url: '',
-				// 	dataType: 'json',
-				// 	success: function(data) {
-
-				// 	},
-				// 	error: function(XMLHttpRequest, textStatus, errorThrown) {
-				// 		//location.href = 'error.html';
-				// 	}
-				// })
-			})
 		})
 	})
 	//点击查看我的分支
@@ -780,9 +794,9 @@ testConvert();
 		document.onkeydown=function(event){
 		    var e = event || window.event || arguments.callee.caller.arguments[0];
 		    if(e && e.keyCode==13){
-		         name = $('#inputContent').val();
-		         $('.inputModel').css('display','none');
-		         $.ajax({
+		        name = $('#inputContent').val();
+		        $('.inputModel').css('display','none');
+		        $.ajax({
 					type: 'POST',
 					url: '/project',
 					data: {'name': name},
@@ -792,23 +806,25 @@ testConvert();
 						var html = projectList.html();
 						html = html + '<div class="project"><img src="img/Category.png" width="20">'+name+'</div>';
 						projectList.html(html);
+						///////////////////////////分割//////////////////////
 						//点击该项目进入该项目的主分支提交记录列表
 						var project = $('.project');
 						project.click(function() {
 							myProjectModel.css('display','none');
 							mainBranchModel.css('display','block');
 							mainBranchList.html('<div class="mainBranch"><div class="left">2017.8.8 10:24   更新</div><div class="right">demonhub</div><div class="clearfix"></div></div>');
-							// $.ajax({
-							// 	type: 'GET',
-							// 	url: '',
-							// 	dataType: 'json',
-							// 	success: function(data) {
-
-							// 	},
-							// 	error: function(XMLHttpRequest, textStatus, errorThrown) {
-							// 		//location.href = 'error.html';
-							// 	}
-							// })
+							$.ajax({
+								type: 'GET',
+								url: '/branch',
+								data: {'id': currentTreeId},
+								dataType: 'json',
+								success: function(data) {
+									console.log(data);
+								},
+								error: function(XMLHttpRequest, textStatus, errorThrown) {
+									//location.href = 'error.html';
+								}
+							})
 							//点击该主分支中的记录显示该记录对应的思维导图并给出差异
 							var mainBranch = $('.mainBranch');
 							mainBranch.click(function() {
@@ -834,17 +850,27 @@ testConvert();
 	    }; 
 	})
 	$('#newBranch').click(function() {
-		// $.ajax({
-		// 	type: 'POST',
-		// 	url: '',
-		// 	dataType: 'json',
-		// 	success: function(data) {
+		var name;
+		$('.inputModel2').css('display','block');
+		document.onkeydown=function(event){
+		    var e = event || window.event || arguments.callee.caller.arguments[0];
+		    if(e && e.keyCode==13){
+		        name = $('#inputContent2').val();
+		        $('.inputModel2').css('display','none');
+		  		//$.ajax({
+				// 	type: 'POST',
+				// 	url: '/branch',
+				// 	data: {'pid': currentTreeId,'name': name},
+				// 	dataType: 'json',
+				// 	success: function(data) {
 
-		// 	},
-		// 	error: function(XMLHttpRequest, textStatus, errorThrown) {
-		// 		//location.href = 'error.html';
-		// 	}
-		// })
+				// 	},
+				// 	error: function(XMLHttpRequest, textStatus, errorThrown) {
+				// 		//location.href = 'error.html';
+				// 	}
+				// })
+		    }
+		}
 	})
 	//将从后台拉取的数组转换成模型树
 	var convertTreeToModelTree = function(tree) {
