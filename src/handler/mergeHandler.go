@@ -17,7 +17,7 @@ type MergerController struct {
 }
 
 func (this *MergerController) Post() {
-	user, err := this.GetUser()
+	_, err := this.GetUser()
 	if err != nil {
 		this.Ctx.WriteString(utils.GetJsonResult("Not Login", -1, nil))
 		return
