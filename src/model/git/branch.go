@@ -20,7 +20,7 @@ type Branch struct {
 
 func GetBranch(branchId int) Branch {
 	branch := Branch{}
-	err := orm.GetDatabase().C(config.BRANCHSET_CNAME).Find(bson.M{"id":branchId}).One(&branch)
+	err := orm.GetDatabase().C(config.BRANCH_CNAME).Find(bson.M{"id":branchId}).One(&branch)
 	if err != nil {
 		return Branch{}
 	} else {
