@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 
 	"github.com/Lqlsoftware/mindmapper/src/model"
 	"github.com/Lqlsoftware/mindmapper/src/model/Tree"
@@ -37,8 +38,9 @@ func (this *CommitController) Post() {
 	// 参数
 	bid,_ := this.GetInt("id")
 	var tree []Tree.TreeNode
-	err = json.Unmarshal([]byte(this.GetString("tree")), tree)
+	err = json.Unmarshal([]byte(this.GetString("tree")), &tree)
 	if err != nil {
+		fmt.Println(err)
 		this.Ctx.WriteString(utils.GetJsonResult("err tree format", -2, nil))
 		return
 	}
