@@ -16,6 +16,7 @@ type Commit struct {
 	Title		string				`json:"title"`
 	Summary		string				`json:"summary"`
 	Tree		Tree.MindMapperTree	`json:"tree"`
+	Submitter	string				`json:"submitter"`
 }
 
 func LoadCommit(Id int) (Commit, error) {

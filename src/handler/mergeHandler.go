@@ -29,7 +29,7 @@ func (this *MergerController) Post() {
 	branch := git.GetBranch(bid)
 	master := git.GetBranch(project.MainBranchId)
 	commit,_ := master.MergeWith(&branch)
-	orm.GetDatabase().C(config.BRANCH_CNAME).Update(bson.M{"id":master.Id}, bson.M{"headid": commit.Id,"commitids": append(master.CommitIds, commit.Id)})
+	orm.GetDatabase().C(config.BRANCH_CNAME).Update(bson.M{"id":master.Id}, bson.M{"set":bson.M{"headid": commit.Id,"commitids": append(master.CommitIds, commit.Id)}})
 	commit.Save()
 }
 
