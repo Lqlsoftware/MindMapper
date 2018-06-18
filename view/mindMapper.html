@@ -95,7 +95,6 @@
 			<div class="form-top-left" style="width: 100%">
 				<h3>XX项目主分支</h3>
 	    		<div style="color:#fff;cursor:pointer;display:inline-block;float:right;" id="checkMyBranch">查看我的该项目分支</div>
-	    		<div style="color:#fff;cursor:pointer;display:inline-block;float:right;margin-right: 20px;" id="newBranch">新建一个分支</div>
 			</div>
 	    </div>
 	    <div class="form-bottom mainBranchList" style="color: #fff"></div>
@@ -106,6 +105,7 @@
 			<div class="form-top-left" style="width: 100%">
 				<h3>我的XX项目分支</h3>
 				<div style="color:#fff;cursor:pointer;display:inline-block;float:right;" id="backToMainbranch">返回主分支</div>
+				<div style="color:#fff;cursor:pointer;display:inline-block;float:right;margin-right: 20px;" id="newBranch">新建一个分支</div>
 			</div>
 	    </div>
 	    <div class="form-bottom myBranchList" style="color: #fff">
@@ -117,6 +117,8 @@
 	<div class="modalBox inputModel2" hidden="hidden">
 		<input type="text" name="" placeholder="输入分支名" id="inputContent2">
 	</div>
+	<div><img src="img/close.png" width="40" style="float: right;cursor: pointer;" id="close" hidden="hidden"></div>
+	<div class="clearfix"></div>
 	<!--阴影-->
 	<div class="shadow" hidden="hidden"></div>
 	<div class="shadow2" hidden="hidden"></div>
@@ -155,6 +157,8 @@
 		this.text = null;
 		//节点在子树中的位置
 		this.rank = 0;
+		//节点的修改状态，仅用于历史图像绘制0-不变，1-增加，2-删除
+		this.diff = 0
 		//文字设置于提取
 		this.setText = function(text) {
 			this.text = text;
@@ -182,6 +186,12 @@
 			this.y = y;
 			//添加节点
 			$('body').append('<div class="plus" style="left:'+x+'px;top:'+y+'px" onclick="addChild('+this.index+')">'+'+'+'</div>');
+		}
+		this.setHistoryNode = function(x,y) {
+			this.x = x;
+			this.y = y;
+			//添加节点
+			$('body').append('<div class="plus" style="left:'+x+'px;top:'+y+'px">'+'+'+'</div>');
 		}
 		//设置兄长
 		this.setPreBro = function(bro) {
@@ -272,10 +282,38 @@
 				x4 = x3 + len*15;
 			//r标识边对应的节点的index
 			//edge[index]中的index是父亲的第index个孩子
-			this.edge[index] = raphael.path('M'+x1+','+eval(y1-70)+' Q'+x2+','+eval(y2-70)+' '+x3+','+eval(y2-70)+' '+'L'+x4+','+eval(y2-70)).attr({'stroke':'red','r':newNode.index,'rx':0});
+			this.edge[index] = raphael.path('M'+x1+','+eval(y1-70)+' Q'+x2+','+eval(y2-70)+' '+x3+','+eval(y2-70)+' '+'L'+x4+','+eval(y2-70)).attr({'stroke':'#ae00ae','r':newNode.index,'rx':0});
 			//点击激活事件
 			this.edge[index].click(active);
 			newNode.setNode(x4,y2);
+			newNode.putText(newNode.text,len);
+			$('input').eq(newNode.index).val(newNode.text);
+		}
+		//历史纪录绘制,因为历史记录是不可修改的
+		this.paintHistoryCurve = function(newNode,index,y2) {
+			//获取文字所占长度
+			if (this.children[index].text != null)
+				var len = this.children[index].text.length;
+			else len = 0;
+			//绘制曲线
+			//x1,y1为起始点；x2为贝塞尔曲线横坐标中间点;x3为贝塞尔曲线横坐标终点,x4为直线横坐标终点,y2为线条终点
+			var x1 = this.x;
+			var y1 = this.y;
+			var x2 = x1 + 10;
+			var x3 = x2 + 10;
+			var	x4 = x3 + 80;
+			if (len > 5)
+				x4 = x3 + len*15;
+			if (this.children[index].diff == 1) {
+				this.edge[index] = raphael.path('M'+x1+','+eval(y1-70)+' Q'+x2+','+eval(y2-70)+' '+x3+','+eval(y2-70)+' '+'L'+x4+','+eval(y2-70)).attr({'stroke':'green','r':newNode.index,'rx':0});
+			}
+			else if (this.children[index].diff == 2) {
+				this.edge[index] = raphael.path('M'+x1+','+eval(y1-70)+' Q'+x2+','+eval(y2-70)+' '+x3+','+eval(y2-70)+' '+'L'+x4+','+eval(y2-70)).attr({'stroke':'red','r':newNode.index,'rx':0});
+			}
+			else {
+				this.edge[index] = raphael.path('M'+x1+','+eval(y1-70)+' Q'+x2+','+eval(y2-70)+' '+x3+','+eval(y2-70)+' '+'L'+x4+','+eval(y2-70)).attr({'stroke':'#ae00ae','r':newNode.index,'rx':0});
+			}
+			newNode.setHistoryNode(x4,y2);
 			newNode.putText(newNode.text,len);
 			$('input').eq(newNode.index).val(newNode.text);
 		}
@@ -557,7 +595,7 @@
 		optionList.head = new listnode(0,nodeList[0]);
 		optionList.currentNode = optionList.head;
 		print();
-testConvert();
+//testConvert();
 		//判断用户登录情况
 		$.ajax({
 			type: 'GET',
@@ -617,7 +655,10 @@ testConvert();
 
 	////////////////////////////////////////////////////////////
 	//全局变量
+	//当前项目ID
 	var currentTreeId;
+	//用户绘制历史思维导图的数组
+	var historyNodeList;
 	///////////////////////////////////////////////////////////
 
 	//前方大量AJAX出没
@@ -661,6 +702,8 @@ testConvert();
 
 	//不覆盖图标的阴影
 	var shadow2 = $('.shadow2');
+	//叉叉
+	var close = $('#close');
 	//获取历史纪录
 	var myHistory = $('#history');
 	var myProjectModel = $('.myProjectModel');
@@ -681,11 +724,11 @@ testConvert();
 			url: '/project',
 			dataType: 'json',
 			success: function(data) {
+				console.log('获取项目列表');
 				console.log(data);
 				var html = '';
-				for (var i = 0; data.data[0] != null && i < data.data[0].length; i++) {
+				for (var i = 0; data.data[0] != null && i < data.data[0].length; i++)
 					html += '<div class="project"><img src="img/Category.png" width="20">'+data.data[0][i].name+'</div>';
-				}
 				projectList.html(html);
 				///////////////////////////分割//////////////////////
 				//点击该项目进入该项目的主分支提交记录列表---该代码在新建项目中还有一段拷贝
@@ -693,9 +736,6 @@ testConvert();
 				project.click(function() {
 					var index = project.index(this);
 					currentTreeId = data.data[0][index].treeId;
-					myProjectModel.css('display','none');
-					mainBranchModel.css('display','block');
-					mainBranchList.html('<div class="mainBranch"><div class="left">2017.8.8 10:24   更新</div><div class="right">demonhub</div><div class="clearfix"></div></div>');
 					$.ajax({
 						type: 'GET',
 						url: '/branch',
@@ -703,6 +743,13 @@ testConvert();
 						dataType: 'json',
 						success: function(data) {
 							console.log(data);
+							myProjectModel.css('display','none');
+							mainBranchModel.css('display','block');
+							var html = '';
+							for (var i = 0; i < data.data.length; i++) {
+								html += '<div class="mainBranch"><div class="left">'+data.data[i].endTime+'  '+data.data[i].name+'</div><div class="right">demonhub</div><div class="clearfix"></div></div>'
+							}
+							mainBranchList.html(html);
 						},
 						error: function(XMLHttpRequest, textStatus, errorThrown) {
 							//location.href = 'error.html';
@@ -734,18 +781,22 @@ testConvert();
 	$('#checkMyBranch').click(function() {
 		mainBranchModel.css('display','none');
 		myBranchModel.css('display','block');
-		myBranchList.html('<div class="myBranch"><div class="left">2017.8.8 10:24   更新</div><div class="right merge">merge</div><div class="clearfix"></div></div>');
-		// $.ajax({
-		// 	type: 'GET',
-		// 	url: '',
-		// 	dataType: 'json',
-		// 	success: function(data) {
-
-		// 	},
-		// 	error: function(XMLHttpRequest, textStatus, errorThrown) {
-		// 		//location.href = 'error.html';
-		// 	}
-		// })
+		$.ajax({
+			type: 'GET',
+			url: '/branch',
+			dataType: 'json',
+			success: function(data) {
+				console.log(data);
+				var html = '';
+				for (var i = 0; i < data.data.length; i++) {
+					html += '<div class="myBranch"><div class="left">'+data.data[i].endTime+'</div><div class="right">'+data.data[i].name+'</div><div class="clearfix"></div></div>'
+				}
+				myBranchList.html(html);
+			},
+			error: function(XMLHttpRequest, textStatus, errorThrown) {
+				//location.href = 'error.html';
+			}
+		})
 		//点击该我的分支中的记录显示该记录对应的思维导图并给出差异
 		var myBranch = $('.myBranch');
 		myBranch.click(function() {
@@ -795,6 +846,10 @@ testConvert();
 		    var e = event || window.event || arguments.callee.caller.arguments[0];
 		    if(e && e.keyCode==13){
 		        name = $('#inputContent').val();
+		        if (name == '' || name == undefined || name == null) {
+		        	alert('工程名不能为空');
+		        	return;
+		        }
 		        $('.inputModel').css('display','none');
 		        $.ajax({
 					type: 'POST',
@@ -810,9 +865,7 @@ testConvert();
 						//点击该项目进入该项目的主分支提交记录列表
 						var project = $('.project');
 						project.click(function() {
-							myProjectModel.css('display','none');
-							mainBranchModel.css('display','block');
-							mainBranchList.html('<div class="mainBranch"><div class="left">2017.8.8 10:24   更新</div><div class="right">demonhub</div><div class="clearfix"></div></div>');
+							var index = project.index(this);
 							$.ajax({
 								type: 'GET',
 								url: '/branch',
@@ -820,6 +873,13 @@ testConvert();
 								dataType: 'json',
 								success: function(data) {
 									console.log(data);
+									myProjectModel.css('display','none');
+									mainBranchModel.css('display','block');
+									var html = '';
+									for (var i = 0; i < data.data.length; i++) {
+										html += '<div class="mainBranch"><div class="left">'+data.data[i].endTime+'  '+data.data[i].name+'</div><div class="right">demonhub</div><div class="clearfix"></div></div>'
+									}
+									mainBranchList.html(html);
 								},
 								error: function(XMLHttpRequest, textStatus, errorThrown) {
 									//location.href = 'error.html';
@@ -856,19 +916,28 @@ testConvert();
 		    var e = event || window.event || arguments.callee.caller.arguments[0];
 		    if(e && e.keyCode==13){
 		        name = $('#inputContent2').val();
+		        if (name == '' || name == undefined || name == null) {
+		        	alert('分支名不能为空');
+		        	return;
+		        }
 		        $('.inputModel2').css('display','none');
-		  		//$.ajax({
-				// 	type: 'POST',
-				// 	url: '/branch',
-				// 	data: {'pid': currentTreeId,'name': name},
-				// 	dataType: 'json',
-				// 	success: function(data) {
-
-				// 	},
-				// 	error: function(XMLHttpRequest, textStatus, errorThrown) {
-				// 		//location.href = 'error.html';
-				// 	}
-				// })
+		  		$.ajax({
+					type: 'POST',
+					url: '/branch',
+					data: {'pid': currentTreeId,'name': name},
+					dataType: 'json',
+					success: function(data) {
+						console.log(data);
+						var html = '';
+						for (var i = 0; i < data.data.length; i++) {
+							html += '<div class="myBranch"><div class="left">'+data.data[i].endTime+'</div><div class="right">'+data.data[i].name+'</div><div class="clearfix"></div></div>'
+						}
+						mainBranchList.html(html);
+					},
+					error: function(XMLHttpRequest, textStatus, errorThrown) {
+						//location.href = 'error.html';
+					}
+				})
 		    }
 		}
 	})
@@ -891,29 +960,65 @@ testConvert();
 		//自定义树
 		var tree = [{idx: 0,father: -1,prebro: -1,edgeNum: 2,rank: 1,value: "null"},
 					{idx: 1,father: 0,prebro: -1,edgeNum: 0,rank: 1,value: "null"},
-					{idx: 2,father: 0,prebro: 1,edgeNum: 0,value: "null"}];
-		var historyNodeList = [];
+					{idx: 2,father: 0,prebro: 1,edgeNum: 2,rank: 2,value: "null"},
+					{idx: 3,father: 2,prebro: -1,edgeNum: 0,rank: 1,value: "null"},
+					{idx: 4,father: 2,prebro: 3,edgeNum: 0,rank: 2,value: "null"}];
+		//自定义差异
+		var diff = [{node: 1, operate: 1},
+					{node: 2, operate: 2}];
+		historyNodeList = [];
 		for (var i = 0; i < tree.length; i++) {
 			//设置父节点
 			var historyNode = new node(i==0?null:historyNodeList[tree[i].father]);
 			historyNode.index = tree[i].idx;
-			historyNode.prebro = historyNodeList[tree[i].prebro];
+			historyNode.prebro = tree[i].rank == 1?null:historyNodeList[tree[i].prebro];
 			historyNode.edgeNum = tree[i].edgeNum;
 			historyNode.rank = tree[i].rank;
 			//还需要给节点父亲设置children[x]----在calcSpace中使用
 			if (i != 0) 
-				historyNodeList[tree[i].father].children[historyNode.rank-1] = historyNode;
+				historyNodeList[tree[i].father].children.push(historyNode);
 			// historyNode.text = tree[i].value;
 			historyNodeList.push(historyNode);
 		}
-		console.log(historyNodeList);
+		for (var i = 0; i < diff.length; i++) 
+			historyNodeList[diff[i].node].diff = diff[i].operate;
+		printHistoryGraph(historyNodeList);
 	}
 	//绘制历史思维导图
-	var printHistoryGraph = function(modelTree) {
-		//绘制根节点
+	var printHistoryGraph = function(historyNodeList) {
+		//清空画布
+		raphael.clear();
+		$('.plus').remove();
+		$('input').remove();
+		//初始化绘制
+		raphael.path('M40,400 L120,400').attr('stroke','#abc');
+		historyNodeList[0].setHistoryNode(120,470);
+		console.log(historyNodeList);
 		calcSpace(historyNodeList[0]);
 		updateLocation(historyNodeList[0]);
+		//绘制非根节点
+		subHistoryRePaint(historyNodeList[0]);
+		//显示叉叉
+		close.css('display','block');
 	}
+	//绘制历史子图
+	var subHistoryRePaint = function(root) {
+		if (root == null) 
+			return null;
+		else if (root.edgeNum == null)
+			return root;
+		else {
+			for (var i = 0; i < root.edgeNum; i++) {
+				root.paintHistoryCurve(root.children[i],i,root.children[i].y);
+				subHistoryRePaint(root.children[i]);
+			}
+		}
+	}
+	//关闭历史思维导图---即重绘当前工作思维导图
+	close.click(function() {
+		rePaint();
+		close.css('display','none');
+	})
 
 //用户登录系统
 	var login = $('#login');
@@ -1004,7 +1109,8 @@ testConvert();
 		})
 	})
 	//登出
-	$('#logout').click(function() {
+	var logout = $('#logout');
+	logout.click(function() {
 
 	})
 </script>
