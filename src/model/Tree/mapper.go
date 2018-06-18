@@ -59,35 +59,35 @@ func (mindMapper *MindMapperTree)updateHash() {
 func (mindMapper *MindMapperTree)DiffWith(other *MindMapperTree) MapperDiff {
 	engine := diffmatchpatch.New()
 	Diffs := MapperDiff{[]MapperNodeDiff{}}
-	for _,curr := range mindMapper.Tree {
-		if last, exist := other.Tree[curr.Idx];!exist {
+	for _, curr := range mindMapper.Tree {
+		if last, exist := other.Tree[curr.Idx]; !exist {
 			// add
 			valueDiff := engine.DiffMain("", curr.Value, true)
 			diff := MapperNodeDiff{
-				Node:		curr,
-				Operate:	Add,
-				Different:	valueDiff,
+				Node:      curr,
+				Operate:   Add,
+				Different: valueDiff,
 			}
 			Diffs.Nodes = append(Diffs.Nodes, diff)
 		} else if curr.Value != last.Value {
 			// modify
 			valueDiff := engine.DiffMain(curr.Value, last.Value, true)
 			diff := MapperNodeDiff{
-				Node:		curr,
-				Operate:	Modify,
-				Different:	valueDiff,
+				Node:      curr,
+				Operate:   Modify,
+				Different: valueDiff,
 			}
 			Diffs.Nodes = append(Diffs.Nodes, diff)
 		}
 	}
-	for _,last := range other.Tree {
-		if _, exist := mindMapper.Tree[last.Idx];!exist {
+	for _, last := range other.Tree {
+		if _, exist := mindMapper.Tree[last.Idx]; !exist {
 			// delete
 			valueDiff := engine.DiffMain(last.Value, "", true)
 			diff := MapperNodeDiff{
-				Node:		last,
-				Operate:	Delete,
-				Different:	valueDiff,
+				Node:      last,
+				Operate:   Delete,
+				Different: valueDiff,
 			}
 			Diffs.Nodes = append(Diffs.Nodes, diff)
 		}

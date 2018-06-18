@@ -16,6 +16,7 @@ type Branch struct {
 	CommitIds	[]int	`json:"commitIds"`
 	StartTime	int64	`json:"startTime"`
 	EndTime		int64	`json:"endTime"`
+	MergeId		[]int
 }
 
 func GetBranch(branchId int) Branch {

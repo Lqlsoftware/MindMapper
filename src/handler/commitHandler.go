@@ -60,3 +60,37 @@ func (this *CommitController)GetUser() (model.User, error) {
 		return user.(model.User), nil
 	}
 }
+
+type CommitsController struct {
+	beego.Controller
+}
+
+func (this *CommitsController) Get() {
+	_, err := this.GetUser()
+	if err != nil {
+		this.Ctx.WriteString(utils.GetJsonResult("Not Login", -1, nil))
+		return
+	}
+
+	bid,_ := this.GetInt("id")
+	branch := git.GetBranch(bid)
+	var commits []git.Commit
+	for _,v := range branch.CommitIds {
+		commit, err := git.LoadCommit(v)
+		if err != nil {
+			fmt.Println(err)
+			this.Ctx.WriteString(utils.GetJsonResult("error", -1, nil))
+		}
+		commits = append(commits, commit)
+	}
+	this.Ctx.WriteString(utils.GetJsonResult("success", 1, commits))
+}
+
+func (this *CommitsController)GetUser() (model.User, error) {
+	user := this.GetSession("user")
+	if user == nil {
+		return model.User{}, errors.New("not login")
+	} else {
+		return user.(model.User), nil
+	}
+}

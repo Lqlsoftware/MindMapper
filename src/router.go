@@ -11,5 +11,6 @@ func bindRouter() {
 	beego.Router("/project", &(handler.ProjectController{}))
 	beego.Router("/branch", &(handler.BranchController{}))
 	beego.Router("/commit", &(handler.CommitController{}))
+	beego.Router("/commits", &(handler.CommitsController{}))
 	beego.Router("/merge", &(handler.MergerController{}))
 }
