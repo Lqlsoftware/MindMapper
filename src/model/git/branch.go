@@ -45,7 +45,7 @@ func NewBranch(pid int, name string) Branch {
 		return Branch{}
 	}
 
-	err = orm.GetDatabase().C(config.BRANCHSET_CNAME).Update(bson.M{"treeid":pid},bson.M{"set":bson.M{"BranchIds":append(project.BranchIds, branch.Id)}})
+	err = orm.GetDatabase().C(config.BRANCHSET_CNAME).Update(bson.M{"treeid":pid},bson.M{"$set":bson.M{"BranchIds":append(project.BranchIds, branch.Id)}})
 	if err != nil {
 		return Branch{}
 	}

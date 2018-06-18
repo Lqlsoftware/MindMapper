@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/Lqlsoftware/mindmapper/src/config"
+	"github.com/Lqlsoftware/mindmapper/src/model"
 	"github.com/Lqlsoftware/mindmapper/src/model/Tree"
 	"github.com/Lqlsoftware/mindmapper/src/orm"
 	"gopkg.in/mgo.v2/bson"
@@ -49,7 +50,7 @@ func GetLastProjectId() int {
 	}
 }
 
-func NewBranchSet(name string, userId int) BranchSet {
+func NewBranchSet(name string, user model.User) BranchSet {
 	pid := GetLastProjectId()
 
 	// origin commit
@@ -65,6 +66,7 @@ func NewBranchSet(name string, userId int) BranchSet {
 			Tree: map[string]Tree.TreeNode{},
 			Hash: "6666",
 		},
+		Submitter:	user.Username,
 	}
 	err := commit.Save()
 	if err != nil {
@@ -91,7 +93,7 @@ func NewBranchSet(name string, userId int) BranchSet {
 		Name:			name,
 		MainBranchId:	master.Id,
 		BranchIds:		[]int{master.Id},
-		MemberIds:		[]int{userId},
+		MemberIds:		[]int{user.Id},
 	}
 	err = project.Save()
 	if err != nil {

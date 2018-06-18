@@ -33,7 +33,7 @@ func (this *ProjectController) Post() {
 	}
 
 	name := this.GetString("name")
-	project := git.NewBranchSet(name, user.Id)
+	project := git.NewBranchSet(name, user)
 	this.Ctx.WriteString(utils.GetJsonResult("new project", 1, project))
 }
 
