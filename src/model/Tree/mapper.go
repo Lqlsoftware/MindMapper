@@ -18,7 +18,6 @@ import (
 type TreeNode struct {
 	Idx		string 	`json:"idx"`
 	Father	string 	`json:"father"`
-	BroId	int		`json:"prebro"`
 	EdgeNum int		`json:"edgeNum"`
 	Rank	string 	`json:"rank"`
 	Value 	string 	`json:"value"`
