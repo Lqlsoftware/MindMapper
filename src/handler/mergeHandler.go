@@ -25,12 +25,22 @@ func (this *MergerController) Post() {
 
 	pid, _ := this.GetInt("pid")
 	bid, _ := this.GetInt("bid")
+
 	project := git.GetBranchSet(pid)
 	branch := git.GetBranch(bid)
 	master := git.GetBranch(project.MainBranchId)
-	commit,_ := master.MergeWith(&branch)
+	commit, conflict, err := master.MergeWith(&branch)
+	if err != nil {
+		this.Ctx.WriteString(utils.GetJsonResult("err occur", -2, nil))
+		return
+	} else if commit == nil {
+		this.Ctx.WriteString(utils.GetJsonResult("conflict need to be fix", 2, conflict))
+		return
+	}
 	orm.GetDatabase().C(config.BRANCH_CNAME).Update(bson.M{"id":master.Id}, bson.M{"$set":bson.M{"headid": commit.Id,"commitids": append(master.CommitIds, commit.Id)}})
-	commit.Save()
+	orm.GetDatabase().C(config.BRANCH_CNAME).Update(bson.M{"id":bid}, bson.M{"$set":bson.M{"mergeids": append(branch.MergeIds, commit.Id)}})
+	this.Ctx.WriteString(utils.GetJsonResult("success", 1, commit))
+	return
 }
 
 func (this *MergerController)GetUser() (model.User, error) {

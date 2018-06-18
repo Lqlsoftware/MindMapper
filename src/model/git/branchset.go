@@ -63,7 +63,7 @@ func NewBranchSet(name string, user model.User) BranchSet {
 		Title:		"orign commit",
 		Summary:	"orign commit",
 		Tree:		Tree.MindMapperTree{
-			Tree: map[string]Tree.TreeNode{},
+			Tree: map[string]Tree.TreeNode{"0":{"0","-1",0,"1",""}},
 			Hash: "6666",
 		},
 		Submitter:	user.Username,

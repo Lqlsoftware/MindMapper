@@ -16,7 +16,7 @@ type Branch struct {
 	CommitIds	[]int	`json:"commitIds"`
 	StartTime	int64	`json:"startTime"`
 	EndTime		int64	`json:"endTime"`
-	MergeId		[]int
+	MergeIds	[]int
 }
 
 func GetBranch(branchId int) Branch {
@@ -39,6 +39,7 @@ func NewBranch(pid int, name string) Branch {
 		CommitIds:	[]int{master.HeadId},
 		StartTime: 	time.Now().Unix(),
 		EndTime:	-1,
+		MergeIds:	[]int{master.HeadId},
 	}
 
 	err := branch.Save()
@@ -53,20 +54,27 @@ func NewBranch(pid int, name string) Branch {
 	return branch
 }
 
-func (branch *Branch)MergeWith(other *Branch) (Commit, error) {
+func (branch *Branch)MergeWith(other *Branch) (*Commit, *Conflict, error) {
 	// 获取 Head Commit
-	dstHead, err := LoadCommit(branch.HeadId)
+	masterHead, err := LoadCommit(branch.HeadId)
 	if err != nil {
-		return Commit{}, errors.New("Wrong Commit Id ")
+		return nil, nil, errors.New("Wrong Commit Id ")
 	}
-	srcHead, err := LoadCommit(other.HeadId)
+	branchHead, err := LoadCommit(other.HeadId)
 	if err != nil {
-		return Commit{}, errors.New("Wrong Commit Id ")
+		return nil, nil, errors.New("Wrong Commit Id ")
 	}
 
-	// 尝试 Merge 两颗树
-	dstHead.MergeWith(&srcHead)
-	return dstHead, nil
+	// 获取公共祖先 base commit
+	base, err := LoadCommit(other.MergeIds[len(other.MergeIds) - 1])
+
+
+	// 三路合并
+	commit, conflict := Merge(&masterHead, &branchHead, &base)
+	if commit == nil {
+		return nil, conflict, nil
+	}
+	return commit, nil, nil
 }
 
 func GetLastBranchId() int {

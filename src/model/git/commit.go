@@ -44,29 +44,38 @@ type Conflict struct {
 	Diff 	[]Tree.MapperNodeDiff
 }
 
-func (commit *Commit)MergeWith(other *Commit) (*Commit, *Conflict) {
+// 三路合并算法
+func Merge(dst, src, base *Commit) (*Commit, *Conflict) {
+	dstDiff := dst.Tree.DiffWith(&base.Tree)
+	srcDiff := src.Tree.DiffWith(&base.Tree)
+
+	// 差异的交集
 	conflict := Conflict{[]Tree.MapperNodeDiff{}}
-	commitDiff := other.Tree.DiffWith(&commit.Tree)
-	for _,diff := range commitDiff.Nodes {
-		if diff.Operate != Tree.Add {
-			conflict.Diff = append(conflict.Diff, diff)
+	flag := false
+	for _,v1 := range srcDiff.Nodes {
+		for _,v2 := range dstDiff.Nodes {
+			// 存在相同差异节点
+			if v1.Node.Idx == v2.Node.Idx {
+				conflict.Diff = append(conflict.Diff, v1, v2)
+				flag = true
+			}
 		}
 	}
-	if len(conflict.Diff) == 0 {
-		DstTree := commit.Tree
-		DstTree.MergeFrom(commitDiff)
-		commit := Commit{
-			Id:	GetLastCommitId(),
-			Diff: commitDiff,
-			Time: time.Now().Unix(),
-			Title: "merge from " + other.Tree.Hash,
-			Summary: "",
-			Tree: DstTree,
-		}
-		commit.Save()
-		return &commit, nil
+	if flag {
+		return nil, &conflict
 	}
-	return nil, &conflict
+
+	resTree := dst.Tree.ApplyDiff(srcDiff)
+	commit := Commit{
+		Id:	GetLastCommitId(),
+		Diff: srcDiff,
+		Time: time.Now().Unix(),
+		Title: "merge from '" + src.Title + "'",
+		Summary: "",
+		Tree: resTree,
+	}
+	commit.Save()
+	return &commit, nil
 }
 
 func NewCommit(bid int, tree []Tree.TreeNode, title, summary string, user model.User) *Commit {

@@ -1,10 +1,9 @@
 package Tree
 
 import (
-"encoding/json"
+	"encoding/json"
 
-
-"github.com/sergi/go-diff/diffmatchpatch"
+	"github.com/sergi/go-diff/diffmatchpatch"
 )
 
 /*
@@ -56,6 +55,25 @@ func (mindMapper *MindMapperTree)updateHash() {
 	mindMapper.Hash = "0"
 }
 
+func (mindMapper *MindMapperTree)ApplyDiff(diff MapperDiff) MindMapperTree {
+	// deep copy
+	res := MindMapperTree{map[string]TreeNode{},"6666"}
+	for k,v := range mindMapper.Tree {
+		res.Tree[k] = v
+	}
+
+	// apply diff
+	for _,v := range diff.Nodes {
+		switch v.Operate {
+		case Add, Modify:
+			res.Tree[v.Node.Idx] = v.Node
+		case Delete:
+			delete(res.Tree, v.Node.Idx)
+		}
+	}
+	return res
+}
+
 func (mindMapper *MindMapperTree)DiffWith(other *MindMapperTree) MapperDiff {
 	engine := diffmatchpatch.New()
 	Diffs := MapperDiff{[]MapperNodeDiff{}}
@@ -93,11 +111,4 @@ func (mindMapper *MindMapperTree)DiffWith(other *MindMapperTree) MapperDiff {
 		}
 	}
 	return Diffs
-}
-
-func (mindMapper *MindMapperTree)MergeFrom(Diff MapperDiff) {
-	for _, add := range Diff.Nodes {
-		mindMapper.addNode(&add.Node)
-	}
-	mindMapper.updateHash()
 }
