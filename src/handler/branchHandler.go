@@ -20,9 +20,16 @@ func (this *BranchController) Get() {
 		return
 	}
 
-	branchId,_ := this.GetInt("id")
-	branch := git.GetBranch(branchId)
-	this.Ctx.WriteString(utils.GetJsonResult("success", 1, branch))
+	projectId,_ := this.GetInt("pid")
+	project := git.GetBranchSet(projectId)
+	master := git.GetBranch(project.MainBranchId)
+	var branch []git.Branch
+	for _,v := range project.BranchIds {
+		if v != master.Id {
+			branch = append(branch, git.GetBranch(v))
+		}
+	}
+	this.Ctx.WriteString(utils.GetJsonResult("success", 1, master, branch))
 }
 
 func (this *BranchController) Post() {

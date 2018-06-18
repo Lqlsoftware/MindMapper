@@ -4,6 +4,8 @@ import (
 	"errors"
 
 	"github.com/Lqlsoftware/mindmapper/src/model"
+	"github.com/Lqlsoftware/mindmapper/src/model/git"
+	"github.com/Lqlsoftware/mindmapper/src/utils"
 	"github.com/astaxie/beego"
 )
 
@@ -17,6 +19,10 @@ func (this *CommitController) Get() {
 		this.Ctx.WriteString(utils.GetJsonResult("Not Login", -1, nil))
 		return
 	}
+
+	cid,_ := this.GetInt("id")
+	commit, _ := git.LoadCommit(cid)
+	this.Ctx.WriteString(utils.GetJsonResult("success", 1, commit))
 }
 
 func (this *CommitController)GetUser() (model.User, error) {
