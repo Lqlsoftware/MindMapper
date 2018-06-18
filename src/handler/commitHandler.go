@@ -1,9 +1,11 @@
 package handler
 
 import (
+	"encoding/json"
 	"errors"
 
 	"github.com/Lqlsoftware/mindmapper/src/model"
+	"github.com/Lqlsoftware/mindmapper/src/model/Tree"
 	"github.com/Lqlsoftware/mindmapper/src/model/git"
 	"github.com/Lqlsoftware/mindmapper/src/utils"
 	"github.com/astaxie/beego"
@@ -22,6 +24,29 @@ func (this *CommitController) Get() {
 
 	cid,_ := this.GetInt("id")
 	commit, _ := git.LoadCommit(cid)
+	this.Ctx.WriteString(utils.GetJsonResult("success", 1, commit))
+}
+
+func (this *CommitController) Post() {
+	user, err := this.GetUser()
+	if err != nil {
+		this.Ctx.WriteString(utils.GetJsonResult("Not Login", -1, nil))
+		return
+	}
+
+	// 参数
+	bid,_ := this.GetInt("id")
+	var tree []Tree.TreeNode
+	err = json.Unmarshal([]byte(this.GetString("tree")), tree)
+	if err != nil {
+		this.Ctx.WriteString(utils.GetJsonResult("err tree format", -2, nil))
+		return
+	}
+	title := this.GetString("title")
+	summary := this.GetString("summary")
+
+	commit := git.NewCommit(bid, tree, title, summary, user)
+
 	this.Ctx.WriteString(utils.GetJsonResult("success", 1, commit))
 }
 

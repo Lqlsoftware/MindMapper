@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/Lqlsoftware/mindmapper/src/config"
+	"github.com/Lqlsoftware/mindmapper/src/model"
 	"github.com/Lqlsoftware/mindmapper/src/model/Tree"
 	"github.com/Lqlsoftware/mindmapper/src/orm"
 	"gopkg.in/mgo.v2/bson"
@@ -66,4 +67,35 @@ func (commit *Commit)MergeWith(other *Commit) (*Commit, *Conflict) {
 		return &commit, nil
 	}
 	return nil, &conflict
+}
+
+func NewCommit(bid int, tree []Tree.TreeNode, title, summary string, user model.User) *Commit {
+	branch := GetBranch(bid)
+	preCommit, _ := LoadCommit(branch.HeadId)
+
+	// 构造新树
+	newTree := Tree.MindMapperTree{Tree: map[string]Tree.TreeNode{}, Hash: "6666"}
+	for _, v := range tree {
+		newTree.Tree[v.Idx] = v
+	}
+
+	// 差异
+	commitDiff := newTree.DiffWith(&preCommit.Tree)
+
+	newCommit := Commit{
+		Id:			GetLastCommitId(),
+		Diff:		commitDiff,
+		Time:		time.Now().Unix(),
+		Title:		title,
+		Summary:	summary,
+		Tree:		newTree,
+		Submitter:	user.Username,
+	}
+	newCommit.Save()
+
+	err := orm.GetDatabase().C(config.BRANCH_CNAME).Update(bson.M{"id":bid},bson.M{"$set":bson.M{"commitids":append(branch.CommitIds, newCommit.Id),"headid": newCommit.Id}})
+	if err != nil {
+		return &Commit{}
+	}
+	return &newCommit
 }
