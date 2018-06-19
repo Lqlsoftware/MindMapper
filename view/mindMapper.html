@@ -135,6 +135,10 @@
 </body>
 
 <script>
+    function timestampToTime(date){
+        var t = new Date(date * 1000).toLocaleString();
+        return t;
+    }
 	//初始化根节点->点击(添加孩子)->addChild()->calcSpace()->updateLocation()->rePaint()->subRePaint()
 	//->paintCurve()->setNode()->putText()
 
@@ -914,10 +918,10 @@
 				myProjectModel.css('display','none');
 				myBranchModel.css('display','block');
 				var html = '';
-				html += '<div class="left searchSubmits">'+data.data[0].startTime+'  '+data.data[0].name+'</div><div class="clearfix"></div>'
+				html += '<div class="left searchSubmits">'+timestampToTime(data.data[0].startTime)+'  '+data.data[0].name+'</div><div class="clearfix"></div>'
 				if (data.data[1] != null)
 					for (var i = 0; i < data.data[1].length; i++) {
-						html += '<div class="left searchSubmits">'+data.data[1][i].startTime+'  '+data.data[1][i].name+'</div><div class="right pull">拉取</div><div class="right merge">发布</div><div class="right edit">编辑</div><div class="clearfix"></div>'
+						html += '<div class="left searchSubmits">'+timestampToTime(data.data[1][i].startTime)+'  '+data.data[1][i].name+'</div><div class="right pull">拉取</div><div class="right merge">发布</div><div class="right edit">编辑</div><div class="clearfix"></div>'
 					}
 				mainBranchList.html(html);
 				getSubmits();
@@ -952,7 +956,7 @@
 					currentSubmitID = data.data[0][len-1].id;
 					var html = '';
 					for (var i = 0; i < data.data[0].length; i++) {
-						html += '<div class="record"><div class="left">'+data.data[0][i].time+'</div><div class="left">'+data.data[0][i].title+'</div><div class="right">'+data.data[0][i].submitter+'</div><div class="clearfix"></div></div>';
+						html += '<div class="record"><div class="left">'+timestampToTime(data.data[0][i].time)+'</div><div class="left">'+data.data[0][i].title+'</div><div class="right">'+data.data[0][i].submitter+'</div><div class="clearfix"></div></div>';
 					}
 					mySubmitsList.html(html);
 					recordHandler();
@@ -1090,7 +1094,7 @@
 				console.log(submitData);
 				var html = '';
 				for (var i = 0; i < data.data[0].length; i++) {
-					html += '<div class="record"><div class="left">'+data.data[0][i].time+'</div><div class="left">'+data.data[0][i].title+'</div><div class="right">'+data.data[0][i].submitter+'</div><div class="clearfix"></div></div>';
+					html += '<div class="record"><div class="left">'+timestampToTime(data.data[0][i].time)+'</div><div class="left">'+data.data[0][i].title+'</div><div class="right">'+data.data[0][i].submitter+'</div><div class="clearfix"></div></div>';
 				}
 				mySubmitsList.html(html);
 				recordHandler();
