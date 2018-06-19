@@ -42,6 +42,7 @@ func GetLastCommitId() int {
 }
 
 type Conflict struct {
+	Tree 	Tree.MindMapperTree
 	Diff 	[]Tree.MapperNodeDiff
 }
 
@@ -93,7 +94,7 @@ func Merge(dst, src, base *Commit, user model.User) (*Commit, *Conflict) {
 
 	// 求差异的交集
 	srcDiff = src.Tree.DiffWith(&base.Tree)
-	conflict := Conflict{[]Tree.MapperNodeDiff{}}
+	conflict := Conflict{src.Tree,[]Tree.MapperNodeDiff{}}
 	apply := Tree.MapperDiff{Nodes:make([]Tree.MapperNodeDiff, len(srcDiff.Nodes))}
 	copy(apply.Nodes, srcDiff.Nodes)
 	for i,v1 := range srcDiff.Nodes {
