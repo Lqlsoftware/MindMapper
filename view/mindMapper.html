@@ -28,9 +28,9 @@
 	<!--操作项-->
 	<img class="op" src="img/back.svg" width="24" id="back">
 	<img class="op" src="img/right.svg" width="24" id="forward">
+    <img class="op" src="img/save.svg" width="24" id="download">
 	<img class="op" src="img/form.svg" width="24" id="save">
 	<img class="op" src="img/apps.svg" width="24" id="history">
-    <img class="op" src="img/save.svg" width="24" id="download">
 	
 	<!--登录弹窗-->
 	<div class="form-box modalBox login" hidden="hidden">
@@ -882,12 +882,13 @@
 				html += '<div class="left searchSubmits">'+data.data[0].startTime+'  '+data.data[0].name+'</div><div class="clearfix"></div>'
 				if (data.data[1] != null)
 					for (var i = 0; i < data.data[1].length; i++) {
-						html += '<div class="left searchSubmits">'+data.data[1][i].startTime+'  '+data.data[1][i].name+'</div><div class="right merge">发布</div><div class="right edit">编辑</div><div class="clearfix"></div>'
+						html += '<div class="left searchSubmits">'+data.data[1][i].startTime+'  '+data.data[1][i].name+'</div><div class="right pull">拉取</div><div class="right merge">发布</div><div class="right edit">编辑</div><div class="clearfix"></div>'
 					}
 				mainBranchList.html(html);
 				getSubmits();
 				editHandler();
 				mergeHandler();
+                pullHandler();
 			},
 			error: function(XMLHttpRequest, textStatus, errorThrown) {
 				//location.href = 'error.html';
@@ -945,6 +946,37 @@
 			})
 		})
 	}
+    //拉取功能的处理函数
+	var pullHandler = function() {
+        var pull = $('.pull');
+        pull.click(function() {
+            //获取当前分支id
+            var index = pull.index(this);
+            console.log(index);
+            console.log(branchData);
+            currentBranchID = branchData[1][index].id;
+            console.log(currentTreeId);
+            console.log(currentBranchID);
+            $.ajax({
+                type: 'GET',
+                url: '/merge',
+                data: {'pid': currentTreeId,
+                    'bid': currentBranchID},
+                dataType: 'json',
+                success: function(data) {
+                    console.log('merge');
+                    console.log(data);
+                    if (data.code == 1) {
+                        alert('pull sucess!');
+                        console.log('pull sucess!!!!!!');
+                    }
+                },
+                error: function(XMLHttpRequest, textStatus, errorThrown) {
+                    //location.href = 'error.html';
+                }
+            })
+        })
+    }
 	//发布功能的处理函数
 	var mergeHandler = function() {
 		var merge = $('.merge');
@@ -970,6 +1002,15 @@
 					} else if (data.code == 2) {
                         console.log('need fix');
                         // 处理冲突
+                        myBranchModel.css('display','none');
+                        //获取当前分支id
+                        currentBranchID = branchData[0].id;
+                        currentSubmitID = branchData[0].id;
+                        console.log('树及差异');
+                        console.log(data);
+                        var tree = data.data[0].tree.tree;
+                        var diff = data.data[0].diff;
+                        convertTreeToHistoryModelTree(tree,diff);
 					}
 				},
 				error: function(XMLHttpRequest, textStatus, errorThrown) {

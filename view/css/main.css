@@ -48,5 +48,7 @@ path {stroke-width: 4px;}
 .edit {cursor: pointer;}
 /*发布*/
 .merge {cursor: pointer;}
+/*拉取*/
+.pull {cursor: pointer;}
 /**/
 .searchSubmits {cursor: pointer;}
