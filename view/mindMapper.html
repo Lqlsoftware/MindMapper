@@ -1100,8 +1100,6 @@
 				console.log('提交信息');
 				console.log(data);
 				submitData = data.data[0];
-				console.log('2');
-				console.log(submitData);
 				var html = '';
 				for (var i = 0; i < data.data[0].length; i++) {
 					html += '<div class="record"><div class="left">'+timestampToTime(data.data[0][i].time)+'</div><div class="left">'+data.data[0][i].title+'</div><div class="right">'+data.data[0][i].submitter+'</div><div class="clearfix"></div></div>';
