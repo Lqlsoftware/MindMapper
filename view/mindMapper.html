@@ -3,34 +3,110 @@
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <script src="js/jquery.js"></script>
+    <script src="js/jquery.min.js"></script>
 	<script src="js/raphael.js"></script>
-	
-	
 	<title>思维导图</title>
 	<link rel="stylesheet" href="css/main.css">
+	<link rel="stylesheet" href="css/form-elements.css">
+	<link rel="stylesheet" href="css/style.css">
+	<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+	<script src="js/bootstrap.min.js"></script>
 </head>
 
 <body>
+	<div class="header">
+		<div class="logo">MindMapper</div>
+		<div class="op_user" id="register">注册</div>
+		<div class="op_user" id="login">登录</div>
+	</div>
+	<div class="clearfix"></div>
+	<img class="op" src="img/back.svg" width="24" id="back">
+	<img class="op" src="img/right.svg" width="24" id="forward">
+	<img class="op" src="img/form.svg" width="24" id="save">
+	<img class="op" src="img/apps.svg" width="24" id="history">
+
+	<!--历史记录弹窗-->
+	
+	
+	<!--登录弹窗-->
+	<div class="form-box modalBox login" hidden="hidden">
+		<div class="form-top">
+			<div class="form-top-left">
+				<h3>Welcome to mindMapper</h3>
+	    		<p>Fill in the form below to get instant access:</p>
+			</div>
+			<div class="form-top-right">
+				<i class="fa fa-pencil"></i>
+			</div>
+	    </div>
+	    <div class="form-bottom">
+        	<div class="form-group">
+        		<label class="sr-only" for="form-first-name">Username</label>
+            	<input type="text" name="form-first-name" placeholder="please input your username" class="form-first-name form-control" id="form-first-name">
+            </div>
+            <div class="form-group">
+            	<label class="sr-only" for="form-last-name">Password</label>
+            	<input type="password" name="form-last-name" placeholder="please input your password" class="form-last-name form-control" id="form-last-name" style="padding: 23px 22px; font-family: 'Roboto', sans-serif; font-size: 16px; font-weight: 300; box-shadow: none">
+            </div>
+            <button class="btn" id="loginSubmit">Login!</button>
+	    </div>
+	</div>
+	<!--注册弹窗-->
+	<div class="form-box modalBox register" hidden="hidden">
+		<div class="form-top">
+			<div class="form-top-left">
+				<h3>New to mindMapper ? ： ）</h3>
+	    		<p>Fill in the form below to get instant access:</p>
+			</div>
+			<div class="form-top-right">
+				<i class="fa fa-pencil"></i>
+			</div>
+	    </div>
+	    <div class="form-bottom">
+        	<div class="form-group">
+        		<label class="sr-only" for="form-first-name">Username</label>
+            	<input type="text" name="form-first-name" placeholder="please input your username" class="form-first-name form-control" id="form-first-name2">
+            </div>
+            <div class="form-group">
+            	<label class="sr-only" for="form-last-name">Password</label>
+            	<input type="password" name="form-last-name" placeholder="please input your password" class="form-last-name form-control" id="form-last-name1" style="padding: 23px 22px; font-family: 'Roboto', sans-serif; font-size: 16px; font-weight: 300; box-shadow: none">
+            </div>
+            <div class="form-group">
+            	<label class="sr-only" for="form-last-name">Confirm</label>
+            	<input type="password" name="form-last-name" placeholder="please confirm your password" class="form-last-name form-control" id="form-last-name2" style="padding: 23px 22px; font-family: 'Roboto', sans-serif; font-size: 16px; font-weight: 300; box-shadow: none">
+            </div>
+            <button class="btn" id="registerSubimt">Register!</button>
+	    </div>
+	</div>
+	<!--历史记录弹窗-->
+	<div class="form-box modalBox historyModel" hidden="hidden">
+		<div class="form-top">
+			<div class="form-top-left">
+				<h3>Here is your history list ： ）</h3>
+	    		<p>never miss what you had done</p>
+			</div>
+	    </div>
+	    <div class="form-bottom historyList" style="color: #fff">
+        	<div>2017.8.8</div>
+	    </div>
+	</div>
+	<!--阴影-->
+	<div class="shadow" hidden="hidden"></div>
 </body>
 
 <script>
+	//初始化根节点->点击(添加孩子)->addChild()->calcSpace()->updateLocation()->rePaint()->subRePaint()
+	//->paintCurve()->setNode()->putText()
+
 	var nodeList = [];
 	var globalIndex = 0;
-	//分支颜色
-	var paintColor =  new Array("red","orange","yellow","green","blue","pink","purple");
-	//鼠标坐标
-	var positionx;
-	var positiony;
-	var mousedown=0;
-	//存储每个节点对象
+	/////////////////////////////
+	//每个节点都是一个对象，设置类//
+	/////////////////////////////
 	var node = function(parent) {
 		//节点序号
 		this.index = 0;
-		this.paint=0;
 		//节点坐标
-		//分支颜色
-		this.color=0;
 		this.x = 0;
 		this.y = 0;
 		//节点上下距离限
@@ -49,12 +125,10 @@
 		this.edgeNum = 0;
 		//节点文字
 		this.text = null;
+		//节点点击
+		this.click = false;
 		//节点在子树中的位置
 		this.num = 0;
-		//设置分支颜色
-		this.setColor = function(color){
-			this.color = color;
-		}
 		//文字设置于提取
 		this.setText = function(text) {
 			this.text = text;
@@ -81,60 +155,45 @@
 			this.x = x;
 			this.y = y;
 			//添加节点
-			$('body').append('<div class="plus" style="left:'+x+'px;top:'+y+'px" onmousedown="mouseM('+x+','+this.index+','+y+')" >'+'+'+'</div>');
-			//$('body').append('<div class="plus" style="left:'+x+'px;top:'+y+'px" onmouseup="addChild('+this.index+'),stopmouse()">'+'+'+'</div>');
+			$('body').append('<div class="plus" style="left:'+x+'px;top:'+y+'px" onclick="addChild('+this.index+')">'+'+'+'</div>');
 		}
 		//设置兄长
 		this.setPreBro = function(bro) {
 			this.prebro = bro;
 		}
 		//添加孩子
-		
-		this.addChild = function() {
+		this.addChild = function(option) {
 			//创建新的孩子并添加到节点集中
 			var newNode = new node(this);
 			newNode.setIndex(globalIndex);
+			console.log('addChild '+newNode.index);
 			nodeList.push(newNode);
 			this.children.push(newNode);
 			globalIndex++;
 			newNode.setDepth(this.depth+1);
-			$('#divmove').remove();
-			if(newNode.depth==2){
-				newNode.setColor(globalIndex%7);
-			}
-			else{
-				newNode.setColor(newNode.parent.color);
-			}
 			if (this.edgeNum > 0)
 				newNode.setPreBro(this.children[this.edgeNum-1]);
-			//this.paintCurve(newNode);
 			this.edgeNum += 1;
 			newNode.num=this.edgeNum-1;
+			//如果通过图操作改变了模型树的状态，还需要改变链表的状态
+			if (option == 0) {
+				optionList.remove(optionList.currentNode);
+				optionList.append(1,newNode);
+				optionList.currentNode = optionList.currentNode.next;
+			}
 			calcSpace(nodeList[0]);
 			updateLocation(nodeList[0]);
-			newNode.paint=1;
-			//this.downClick(newNode);
 			print();
 			rePaint();
-			newNode.paint=0;
-			//this.paintCurve(newNode,globalIndex,newNode.y);
 		}
-		//删除孩子
-		this.deleteNode = function() {
+		//删除孩子 ---- option: 0表示通过delete删除，1表示通过前进后退删除
+		this.deleteNode = function(option) {
 			var parent = this.parent;
 			var index = this.index;
-			var howOldIm;
-			//获取到该节点是父亲的第howOldIm个孩子
-			for (var k = 0; k < parent.edgeNum; k++) 
-				if (parent.children[k].index == index){
-					howOldIm = k;
-					break;
-				}
-			console.log(howOldIm);
-			if (howOldIm == 0 && parent.edgeNum > 1) 
+			if (this.num == 0 && parent.edgeNum > 1) 
 				parent.children[1].setPreBro(null);
-			else if (howOldIm != parent.edgeNum - 1)
-				parent.children[howOldIm+1].setPreBro(parent.children[howOldIm-1]);
+			else if (this.num != parent.edgeNum - 1)
+				parent.children[this.num+1].setPreBro(parent.children[this.num-1]);
 			//从线性数组中删除节点以及其孩子
 			for (var i = 0; i < nodeList.length; i++)
 				if (nodeList[i].index == index) {
@@ -142,21 +201,32 @@
 				}
 			//从父亲的孩子列表中删除节点
 			console.log('edgeNum '+parent.edgeNum);
-			for (var j = 0; j < parent.edgeNum; j++)
-				if (parent.children[j].index == index) {
-					parent.children.splice(j,1);
-					break;
-				}
+			for(var i=this.num+1;i<parent.edgeNum-1;i++){
+				parent.children[i].num--;
+			}
+			parent.children.splice(this.num,1);
 			parent.edgeNum -= 1;
 			delete this;
+			//如果通过图操作改变了模型树的状态，还需要改变链表的状态
+			if (option == 0) {
+				optionList.remove(optionList.currentNode);
+				optionList.append(2,this);
+				optionList.currentNode = optionList.currentNode.next;
+			}
+			
 			//console.log(nodeList);
 			calcSpace(nodeList[0]);
 			updateLocation(nodeList[0]);
 			print();
 			rePaint();
 		}
-		//动态绘画分支
+
+		//绘制曲线，输出文字
 		this.paintCurve = function(newNode,index,y2) {
+			//获取文字所占长度
+			if (this.children[index].text != null)
+				var len = this.children[index].text.length;
+			else len = 0;
 			//绘制曲线
 			//x1,y1为起始点；x2为贝塞尔曲线横坐标中间点;x3为贝塞尔曲线横坐标终点,x4为直线横坐标终点,y2为线条终点
 			var x1 = this.x;
@@ -164,69 +234,122 @@
 			var x2 = x1 + 10;
 			var x3 = x2 + 10;
 			var	x4 = x3 + 80;
-			var p=raphael.path('M'+x1+','+y1+' '+'L'+x1+','+y1);
- 			//var p=raphael.path('cx:'+x1+','+'cy:'+y1+','+'r:'+0);
-			p.animate({path:'M'+x1+','+y1+' Q'+x2+','+y2+' '+x3+','+y2+' '+'L'+x4+','+y2},500).attr('stroke',paintColor[newNode.color]);
-			newNode.setNode(x4,y2);
-			newNode.setText();
-			$('input').eq(newNode.index).val(newNode.text);
-		}
-		this.repaintCurve = function(newNode,index,y2) {
-			//绘制曲线
-			//x1,y1为起始点；x2为贝塞尔曲线横坐标中间点;x3为贝塞尔曲线横坐标终点,x4为直线横坐标终点,y2为线条终点
-			var x1 = this.x;
-			var y1 = this.y;
-			var x2 = x1 + 10;
-			var x3 = x2 + 10;
-			var	x4 = x3 + 80;
-			this.edge[index] =raphael.path('M'+x1+','+y1+' Q'+x2+','+y2+' '+x3+','+y2+' '+'L'+x4+','+y2).attr('stroke',paintColor[newNode.color]);
+			if (len > 5)
+				x4 = x3 + len*15;
+			//r标识边对应的节点的index
+			//edge[index]中的index是父亲的第index个孩子
+			this.edge[index] = raphael.path('M'+x1+','+eval(y1-70)+' Q'+x2+','+eval(y2-70)+' '+x3+','+eval(y2-70)+' '+'L'+x4+','+eval(y2-70)).attr({'stroke':'red','r':newNode.index,'rx':0});
 			//点击激活事件
 			this.edge[index].click(active);
 			newNode.setNode(x4,y2);
-			newNode.setText();
+			newNode.putText(newNode.text,len);
 			$('input').eq(newNode.index).val(newNode.text);
 		}
 
-		this.setText = function() {
+		//放置input
+		this.putText = function(content,len) {
 			var x = this.x - 70;
 			var y = this.y - 15;
-			$('body').append('<input id="'+this.index+'" class="text" style="left:'+x+'px;top:'+y+'px" placeholder="text" onclick="getText('+this.index+')">');
+			if (content == null)
+				content = "";
+			var width = 68;
+			if (len > 5 ) {
+				width = len * 15;
+				x = this.x - width;
+			}
+			$('body').append('<input id="'+this.index+'" class="text" style="left:'+x+'px;top:'+y+'px;width:'+width+'px;" placeholder="text" onblur="getText('+this.index+')" value="'+content+'">');
 		}
-		/*this.dragCurve() {
-			实现raphael拖动
-			 var start = function (x, y) {
-			    this.attr({opacity: 1});
-			    this.lastX = x;
-			     this.lastY = y;
-			 },
-			 move = function (dx, dy, x, y) {
-		     var deltaX = x - this.lastX;
-			 var deltaY = y - this.lastY;
-			     this.translate(deltaX, deltaY);
-			     this.lastX = x;
-			     this.lastY = y;
-			 },
-			 up = function () {
-			     raphael.clear();
-				$('div').remove();
-			 };
-			  
-			 this.edge[this.edgeNum].drag(move, start, up);
-		}*/
 	}
-	
+	//2
+	var MoveAddChild = function(node){
+		pnode = node.parent;
+		nodeList.push(node);
+		if(node.edgeNum!=0){
+			addSubTree(node);
+		}
+		for(var i=node.num+1;i<pnode.edgeNum-1;i++){
+			pnode.children[i].num++;
+		}
+		pnode.edgeNum +=1;
+		pnode.children.splice(node.num,0,node);
+		if(node.num<pnode.edgeNum-1){
+			pnode.children[node.num+1].setPreBro(node);
+		}
+		calcSpace(nodeList[0]);
+		updateLocation(nodeList[0]);
+		print();
+		rePaint();
+	}
+
+	//定义一个双向链表,用于存储树的操作状态，用于撤销和前进
+	//链表节点,存储用户的操作
+	//option -----  0：无操作 1：增加  2：删除  3：移动
+	var listnode = function(option,node) {
+		//操作,如增加删除
+		this.option = option;
+		//操作对象,模型树节点
+		this.node = node;
+		this.next = null;
+		this.prev = null;
+	}
+	//链操作
+	var Llist = function() {
+		//初始化链表头
+		this.head = null;
+		//链表当前节点
+		this.currentNode = null;
+		//在链表尾插入新的操作
+		this.append = function(option,node) {
+			var newListnode = new listnode(option,node);
+			var currNode = this.findLast();
+			newListnode.next = null;
+			newListnode.prev = currNode;
+			currNode.next = newListnode;
+		}
+		//删除链表指定位置以后所有元素的操作
+		this.remove = function(listnode) {
+			var currNode = this.find(listnode);
+		    currNode.next = null;
+		}
+		//在链表中查找到对应位置的节点
+		this.find = function(listnode){
+		    var currNode = this.head;
+		    while (currNode != listnode){
+		        currNode = currNode.next;
+		    }
+		    return currNode;
+		}
+		//查找链表尾节点
+		this.findLast = function() {
+			var currNode = this.head;
+		    while (!(currNode.next == null)){
+		        currNode = currNode.next;
+		    }
+		    return currNode;
+		}
+	}
+
+	var optionList = new Llist();
+
 	//边的点击激活函数
-	var active = function() {
-		//var temp = this;
+	var active = function(e) {
+		event.stopImmediatePropagation();
 		this.attr('stroke','pink');
+		//rx用作点击判断，选中为1，未选中为0
+		this.attr('rx',1);
 		var index = this.attr('r');
 		console.log('active '+index);
+		var edge = this;
+		$('body').click(function() {
+			rePaint();
+			edge.attr('rx',0);
+		})
 		//点击delete删除对应节点
 		$(document).keydown(function(event) {
-			if (event.keyCode == 46) {
+			if (event.keyCode == 46 && edge.attr('rx') == 1) {
 				for (var i = 0; i < nodeList.length; i++) {
 					if (nodeList[i].index == index) {
-						nodeList[i].deleteNode();
+						nodeList[i].deleteNode(0);
 						break;
 					}
 				}
@@ -251,6 +374,14 @@
 				break;
 			}
 	}
+	//递归添加子树所有的孩子
+	var addSubTree = function(node) {
+		if(node == null) return 0;
+		for (var j = 0; j < node.edgeNum; j++) {
+			nodeList.push(node.children[j]);
+			addSubTree(node.children[j]);
+		}
+	}
 
 	//递归计算n叉树上下距离限
 	var calcSpace = function(root) {
@@ -262,191 +393,50 @@
 			for (var i = 0; i < root.edgeNum; i++) {
 				calcSpace(root.children[i]);
 			}
+			//上下距离限临时变量
 			var up = 0;
 			var down = 0;
-			if (root.edgeNum == 1) down = root.down;
-			if (root.edgeNum % 2 == 0) {
-				for (var i = 0; i < root.edgeNum/2; i++) 
-					up += root.children[i].up + root.children[i].down;
-				for (var i = root.edgeNum/2; i < root.edgeNum;i++) 
-					down += root.children[i].up + root.children[i].down;
+			//len表示子树总高度
+			var len = 0;
+			//current表示逐渐添加孩子时子树的高度
+			var current = 0;
+			//node表示比父节点高的序号最大的孩子（出生最晚）
+			var node = 0;
+			//如果只有一个孩子，直接计算其上下距离限
+			if (root.edgeNum == 1) {
+				up = 20 + root.children[0].up;
+				down = root.children[0].down>40?root.children[0].down - 20:20;
 			}
-			else if (root.edgeNum % 2 == 1) {
-				for (var i = 0; i < root.edgeNum/2; i++) 
+			else {
+				//计算子树全高
+				for (var i = 0; i < root.edgeNum; i++) {
+					len += root.children[i].up + root.children[i].down;
+				}
+				//找到临界点（第一个下界越过平均值的点）
+				for (var i = 0; i < root.edgeNum; i++) {
+					current += root.children[i].up + root.children[i].down;
+					if (current >= len/2) {
+						node = i;
+						break;
+					}
+				}
+				//由于第一个孩子位置固定，所以进行特殊处理
+				//如果这个临界点本身在平均值下，则更改临界点为其兄长,对大屁股临界孩子做了特殊处理ε=( o｀ω′)ノ
+				if ((current - root.children[node].down + 20 > len/2 || root.children[node].down > len/2) && node != 0 ) {
+					node = node - 1;
+				}
+				console.log('父节点：'+root.index+' 临界点：'+node);
+				//计算上下距离限
+				for (var i = 0; i < node; i++) 
 					up += root.children[i].up + root.children[i].down;
-				for (var i = Math.floor(root.edgeNum/2)+1; i < root.edgeNum;i++) 
+				up += root.children[node].up + 20;
+				for (var i = node+1; i < root.edgeNum;i++) 
 					down += root.children[i].up + root.children[i].down;
+				down += root.children[node].down - 20;
 			}
 			root.setDistance(up,down);
 		}
 		return root;
-	}
-	function getMousePos(event) {
-			var e = event || window.event;
-			var scrollX = document.documentElement.scrollLeft || document.body.scrollLeft;
-			var scrollY = document.documentElement.scrollTop || document.body.scrollTop;
-			var x = e.pageX || e.clientX + scrollX;
-			var y = e.pageY || e.clientY + scrollY;
-			return { 'x': x, 'y': y };
-		}
-	//确定节点位置
-	var locateNode = function(index){
-		for(var i=0;i<globalIndex;i++){
-			if(nodeList[i].index==index){
-				return nodeList[i];
-			}
-		}
-	}
-	//鼠标移动事件
-	var mouseM = function(x,index,y){
-		$('body').append('<div id="divmove" position="absolute" class="plus" style="left:'+x+'px;top:'+y+'px" onmouseup="addChild('+index+')">'+'+'+'</div>');
-		mousedown=1;
-		$(document).mousemove(function(){
-			if(mousedown){
-			var position;
-			var newNode = locateNode(index);
-				var x2=newNode.x+10;
-				var x3=x2+10;
-				position=getMousePos();
-				var x4=position.x-7;
-				var y2= position.y-5;
-				rePaint();
-				$('body').append('<div id="divmove" position="absolute" class="plus" style="left:'+x4+'px;top:'+y2+'px" onmouseup="moveChild('+x4+','+index+','+y2+')">'+'+'+'</div>');
-				$('#divmove').css('left',x4);
-				$('#divmove').css('top',y2);
-				//var x4=100;
-				//var y2=100;
-				if(index>0){
-					raphael.path('M'+newNode.x+','+newNode.y+' Q'+x2+','+y2+' '+x3+','+y2+' '+'L'+position.x+','+position.y).attr('stroke',paintColor[newNode.color]);
-					}
-				else{
-					raphael.path('M'+newNode.x+','+newNode.y+' Q'+x2+','+y2+' '+x3+','+y2+' '+'L'+position.x+','+position.y).attr('stroke',paintColor[(globalIndex+1)%7]);
-					}
-				}
-		});
-	}
-	//插入子树
-	var moveChild = function(x,index,y){
-		var newNode = locateNode(index);
-		var length = Math.sqrt((newNode.x-x)*(newNode.x-x)+(newNode.y-y)*(newNode.y-y));
-		if(length<20)
-			addChild(index);
-		else{
-			mousedown=0;
-			calculate(x,index,y);
-			rePaint();
-		}
-	}
-	//计算插入子树
-	//记录最近的节点
-	var  calculate = function(x,index,y){
-		var group = [];
-		var newNode = locateNode(index);
-		group[0] = nodeList[0];
-		var positioni;
-		var nearest=10000;
-		var position;
-		var pnode;
-		var nodeindex;
-		//队列首部和尾部
-		var gh = 0;
-		var gl = 0;
-		//上面最近和下面最近
-		var nearh=10000;
-		if(nodeList[0].x-x>0){
-			rePaint();
-			return 1;
-		}
-		while(gh<=gl){
-			positioni=-1;
-			for(var i=0;i<group[gh].edgeNum;i++){
-				if((group[gh].x-x)>0){
-					break;
-				}
-				else{
-					gl++;
-					group[gl]=group[gh].children[i];
-					var length = Math.sqrt((group[gh].children[i].x-x)*(group[gh].children[i].x-x)+(group[gh].children[i].y-y)*(group[gh].children[i].y-y));
-					if(length<nearh){
-						positioni=i;
-						nearh=length;
-					}
-				}
-			}
-			if(nearest>nearh){
-				nearest=nearh;
-				position=positioni;
-				pnode=group[gh];
-			}
-			gh++;
-		}
-		if(nearest<=25){
-			var insertnodde = pnode.children[position];
-				/*if(insertnodde.y>y){
-						if(pnode.children[positioni].y-y>0)
-							positioni=positioni+1;
-						//插入节点
-						newNode.parent.edgeNum--;
-						newNode.parent.children.splice(newNode.num,1);
-						newNode.setNum(positioni);
-						newNode.parent = pnode;
-						pnode.children.splice(positioni+1,0,newNode);
-						pnode.edgeNum += 1;
-						//group[gh].push(newNode);
-						for(var j = pnode.edgeNum-1;j>positioni;j--){
-							pnode.children[j].num++;
-						}
-						newNode.setDepth(pnode.depth+1);
-						newNode.setPreBro(pnode.children[positioni-1]);
-						pnode.children[positioni+1].setPreBro(newNode);
-						calcSpace(nodeList[0]);
-						updateLocation(nodeList[0]);
-						newNode.paint=1;
-						print();
-						rePaint();
-						newNode.paint=0;
-					}
-				else{
-					newNode.parent.edgeNum--;
-					newNode.parent.children.splice(newNode.num,1);
-					if(pnode.children[0].y-y>0){
-						pnode.children.splice(0,0,newNode);
-						pnode.edgeNum += 1;
-						newNode.num = 0;
-						if (pnode.edgeNum > 0)
-							pnode.children[1].setPreBro(newNode);
-						for(var j = pnode.edgeNum-1;j>0;j--){
-							pnode.children[j].num++;
-						}
-					}*/
-			newNode.parent.edgeNum--;
-			if(newNode.num<newNode.parent.edgeNum){
-				newNode.parent.children[newNode.num+1].setPreBro(newNode.prebro);
-			}
-			newNode.parent.children.splice(newNode.num,1);
-			insertnodde.children.push(newNode);
-			insertnodde.edgeNum += 1;
-			newNode.num=insertnodde.edgeNum-1;
-			if (insertnodde.edgeNum > 1)
-				newNode.setPreBro(insertnodde.children[insertnodde.edgeNum-2]);
-			else
-				newNode.prebro = null;
-			newNode.parent = insertnodde;
-			newNode.setDepth(insertnodde.depth+1);
-			calcSpace(nodeList[0]);
-			updateLocation(nodeList[0]);
-			newNode.paint=1;
-			print();
-			rePaint();
-			newNode.paint=0;
-		}
-	}
-	//打印计算结果，用于测试
-	var print = function() {
-		for (var i = 0; i < nodeList.length; i++) {
-			console.log('depth: '+nodeList[i].depth+'  上限：'+nodeList[i].up+'  下限: '+nodeList[i].down+'  纵坐标: '+nodeList[i].y+'  内容: '+nodeList[i].text);
-		}
-		console.log("");
 	}
 
 	//更新位置信息
@@ -456,18 +446,59 @@
 		else if (root.edgeNum == 0) 
 			return root;
 		else {
-			//确定第一个孩子的位置
+			//len表示子树总高度
+			var len = 0;
+			//current表示逐渐添加孩子时子树的高度
+			var current = 0;
+			//node表示比父节点高的序号最大的孩子（出生最晚）
+			var node = 0;
+			//计算子树全高
 			for (var i = 0; i < root.edgeNum; i++) {
-				if (root.prebro == null && i == 0) 
-					root.children[0].setHeight(root.y - 40*(root.edgeNum%2==1?Math.floor(root.edgeNum/2)+1:root.edgeNum/2) + 20);
+				len += root.children[i].up + root.children[i].down;
+			}
+			//找到临界点（第一个下界越过平均值的点）
+			for (var i = 0; i < root.edgeNum; i++) {
+				current += root.children[i].up + root.children[i].down;
+				if (current >= len/2) {
+					node = i;
+					break;
+				}
+			}
+			//如果这个临界点本身在平均值下，则更改临界点为其兄长
+			if ((current - root.children[node].down + 20 > len/2 || root.children[node].down > len/2) && node != 0 ) {
+				node = node - 1;
+			}
+			for (var i = 0; i < root.edgeNum; i++) {
+				//如果该节点没有兄长，确定第一个孩子相对自己的高度
+				if (root.prebro == null && i == 0) {
+					var diff = 0;
+					//如果只有一个孩子，则比根节点高20
+					if (root.edgeNum == 1)
+						root.children[0].setHeight(root.y - 20);
+					//如果不只一个孩子，根据临界点位置确定孩子高度
+					else {
+						if (node > 0) {
+							diff += root.children[0].down; 
+							for (var j = 1; j < node; j++)
+								diff += root.children[j].up + root.children[j].down;
+							diff += root.children[node].up;
+						}
+						diff += 20;
+						root.children[0].setHeight(root.y - diff);
+					}
+				}
+				//如果该节点有兄长，确定第一个孩子相对自己的高度
 				else if (i == 0)
 					root.children[0].setHeight(root.prebro.y + root.prebro.down + root.children[0].up);
-				else
+				//如果该节点不是第一个孩子，根据上一个孩子确定自己的高度
+				else {
 					root.children[i].setHeight(root.children[i-1].y + root.children[i-1].down + root.children[i].up);
+				}
 				updateLocation(root.children[i]);
 			}
 		}
 	}
+
 	//绘制子图
 	var subRePaint = function(root) {
 		if (root == null) 
@@ -475,14 +506,8 @@
 		else if (root.edgeNum == null)
 			return root;
 		else {
-			var i = 0;
-			for (i; i < root.edgeNum; i++) {
-				if(root.children[i].paint==1){
-					root.paintCurve(root.children[i],i,root.children[i].y);
-				}
-				else{
-					root.repaintCurve(root.children[i],i,root.children[i].y);
-				}
+			for (var i = 0; i < root.edgeNum; i++) {
+				root.paintCurve(root.children[i],i,root.children[i].y);
 				subRePaint(root.children[i]);
 			}
 		}
@@ -492,39 +517,206 @@
 	var rePaint = function() {
 		//清空画布
 		raphael.clear();
-		$('div').remove();
+		$('.plus').remove();
 		$('input').remove();
 		//初始化绘制
 		raphael.path('M40,400 L120,400').attr('stroke','#abc');
-		nodeList[0].setNode(120,400);
+		nodeList[0].setNode(120,470);
 		//绘制非根节点
 		subRePaint(nodeList[0]);
+	}
+
+	//打印计算结果，用于测试
+	var print = function() {
+		for (var i = 0; i < nodeList.length; i++) {
+			console.log('index: '+nodeList[i].index+'  depth: '+nodeList[i].depth+'  上限：'+nodeList[i].up+'  下限: '+nodeList[i].down+'  纵坐标: '+nodeList[i].y+'  内容: '+nodeList[i].text);
+		}
+		console.log("");
 	}
 
 	var raphael;
 	//初始化图形
 	window.onload = function() {
-		raphael = new Raphael(10,10,5000,5000);
+		var width = document.body.scrollWidth;
+		$('.shadow').css('width',width);
+		raphael = new Raphael(10,80,width,5000);
 		raphael.path('M40,400 L120,400').attr('stroke','#abc');
-		//var rec = raphael.rect(40,350,40,20);
 		var myRoot = new node(null);
 		myRoot.setIndex(0);
 		nodeList.push(myRoot);
 		globalIndex++;
-		myRoot.setNode(120,400);
+		myRoot.setNode(120,470);
 		myRoot.setDepth(1);
+		optionList.head = new listnode(0,nodeList[0]);
+		optionList.currentNode = optionList.head;
 		print();
 	}
-	//
-	//用于连接div于类的功能函数
+	
+
+	//用于连接div与类的功能函数
 	addChild = function(index) {
-		nodeList[index].addChild();
-		mousedown=0;
+		for (var i = 0; i < nodeList.length; i++)
+			if (nodeList[i].index == index)
+				nodeList[i].addChild(0);
 	}
 
+	//完成增删改后进行修改
 	getText = function(index) {
 		var text = $('#'+index).val();
 		nodeList[index].setText(text);
+		rePaint();
 	}
 
+//以下为固定位置的按钮函数
+	//后退按钮
+	var back = $('#back');
+	back.click(function() {
+		var current = optionList.currentNode;
+		var op = current.option;
+		var node = current.node;
+		switch (op) {
+			case 1: {
+				node.deleteNode(1);
+				optionList.currentNode = current.prev;
+				break;
+			}
+			case 2: {
+				MoveAddChild(current.node);
+				optionList.currentNode = current.prev;
+				break;
+			}
+			default: break;
+		}
+	})
+	//
+	var forward = $('#forward');
+	forward.click(function() {
+		var current = optionList.currentNode.next;
+		var op = current.option;
+		var node = current.node;
+		switch (op) {
+			case 1: {
+				optionList.currentNode = current;
+				MoveAddChild(current.node);
+				break;
+			}
+			case 2: {
+				node.deleteNode(1);
+				optionList.currentNode = current;
+				break;
+			}
+			default: break;
+		}
+	})
+	//将思维导图上传至服务器
+	var save = $('#save');
+	save.click(function() {
+		$.ajax({
+			type: 'POST',
+			url: '',
+			data: {
+				tree: nodeList
+			},
+			dataType: 'json',
+			success: function() {
+				alert('mindMapper');
+			},
+			error: function(XMLHttpRequest, textStatus, errorThrown) {
+				//location.href = 'error.html';
+			}
+		})
+	})
+
+	//获取历史纪录
+	var myHistory = $('#history');
+	var historyModel = $('.historyModel');
+	myHistory.click(function() {
+		alert('23');
+		$.ajax({
+			type: 'GET',
+			url: '',
+			dataType: 'json',
+			success: function(data) {
+				//historyList.append('');
+				historyModel.css('display','block');
+				shadow.css('display','block');
+			},
+			error: function(XMLHttpRequest, textStatus, errorThrown) {
+				//location.href = 'error.html';
+			}
+		})
+		
+	})
+
+//用户登录系统
+	config = "http://192.168.43.39:8080";
+
+	var login = $('#login');
+	var loginModel = $('.login');
+	var register = $('#register');
+	var registerModel = $('.register');
+	var shadow = $('.shadow');
+	//登录按钮
+	login.click(function() {
+		loginModel.css('display','block');
+		shadow.css('display','block');
+	})	
+	//注册按钮
+	register.click(function() {
+		registerModel.css('display','block');
+		shadow.css('display','block');
+	})
+	//点击模态框外空间隐藏模态框
+	shadow.click(function() {
+		loginModel.css('display','none');
+		registerModel.css('display','none');
+		historyModel.css('display','none');
+		shadow.css('display','none');
+	})
+	//登录提交按钮
+	var loginSubmit = $('#loginSubmit');
+	loginSubmit.click(function() {
+
+		var username = $('#form-first-name').val();
+		var password = $('#form-last-name').val();
+		alert(config + '/login');
+		$.ajax({
+			type: 'POST',
+			url: config + '/login',
+			data: {
+				'username': username,
+				'password': password
+			},
+			dataType: 'json',
+			success: function(data) {
+				console(data);
+			},
+			error: function(XMLHttpRequest, textStatus, errorThrown) {
+				//location.href = 'error.html';
+			}
+		})
+	})
+	//注册提交按钮
+	var registerSubimt = $('#registerSubimt');
+	registerSubimt.click(function() {
+		var username = $('#form-first-name2').val();
+		var password = $('#form-last-name1').val();
+		var repeatPassword = $('#form-last-name2').val();
+		$.ajax({
+			type: 'POST',
+			url: '',
+			data: {
+				username: username,
+				password: password,
+				repeatPassword: repeatPassword
+			},
+			dataType: 'json',
+			success: function(data) {
+
+			},
+			error: function(XMLHttpRequest, textStatus, errorThrown) {
+				//location.href = 'error.html';
+			}
+		})
+	})
 </script>
