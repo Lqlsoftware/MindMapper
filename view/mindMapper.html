@@ -331,7 +331,8 @@
 				width = len * 15;
 				x = this.x - width;
 			}
-			$('body').append('<input id="'+this.index+'" class="text" style="left:'+x+'px;top:'+y+'px;width:'+width+'px;" placeholder="text" onblur="getText('+this.index+')" value="'+content+'">');
+			$('body').append('<input class="text" style="left:'+x+'px;top:'+y+'px;width:'+width+'px;" placeholder="text" onblur="getText('+this.index+')" value="'+content+'">');
+			// $('body').append('<input id="'+this.index+'" class="text" style="left:'+x+'px;top:'+y+'px;width:'+width+'px;" placeholder="text" onblur="getText('+this.index+')" value="'+content+'">');
 		}
 	}
 
@@ -1038,6 +1039,7 @@
 	//将从后台拉取的数组转换成模型树--用于编辑模型
 	var convertTreeToModelTree = function(tree) {
 		console.log(tree);
+		nodeList = [];
 		for (var i = 0; tree[i] != null; i++) {
 			//设置父节点
 			var myNode = new node(i==0?null:nodeList[parseInt(tree[i].father)]);
@@ -1047,7 +1049,7 @@
 			myNode.prebro = tree[i].rank == 0 || 1?null:nodeList[tree[i].prebro];
 			//还需要给节点父亲设置children[x]----在calcSpace中使用
 			if (i != 0) 
-				nodeList[parseInt(tree[i]).father].children.push(myNode);
+				nodeList[parseInt(tree[i].father)].children.push(myNode);
 			// historyNode.text = tree[i].value;
 			nodeList.push(myNode);
 		}
