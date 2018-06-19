@@ -10,13 +10,9 @@
 </head>
 
 <body>
-    <img class="op" src="img/save.svg" width="24" id="download">
+    <button onclick="screenshot()">screen-shot</button>
     <script>
-        // 保存下载按钮
-        var download = $('#download');
-        download.click(function() {
-            // 删除所有class==plus
-            $(".plus").remove();
+        function screenshot() {
             // 对svg的处理
             var nodesToRecover = [];
             var nodesToRemove = [];
@@ -51,23 +47,22 @@
                 img.src = imgData;
                 //根据图片的尺寸设置pdf的规格，要在图片加载成功时执行，之所以要*0.225是因为比例问题
                 img.onload = function() {
-                    //此处需要注意，pdf横置和竖置两个属性，需要根据宽高的比例来调整，不然会出现显示不完全的问题
-                    if (this.width > this.height) {
-                        var doc = new jsPDF('l', 'mm', [this.width * 0.225, this.height * 0.225]);
-                    } else {
-                        var doc = new jsPDF('p', 'mm', [this.width * 0.225, this.height * 0.225]);
+                        //此处需要注意，pdf横置和竖置两个属性，需要根据宽高的比例来调整，不然会出现显示不完全的问题
+                        if (this.width > this.height) {
+                            var doc = new jsPDF('l', 'mm', [this.width * 0.225, this.height * 0.225]);
+                        } else {
+                            var doc = new jsPDF('p', 'mm', [this.width * 0.225, this.height * 0.225]);
+                        }
+                        doc.addImage(imgData, 'jpeg', 0, 0, this.width * 0.225, this.height * 0.225);
+                        //根据下载保存成不同的文件名
+                        doc.save('mindmapper_' + new Date().getTime() + '.pdf');
                     }
-                    doc.addImage(imgData, 'jpeg', 0, 0, this.width * 0.225, this.height * 0.225);
-                    //根据下载保存成不同的文件名
-                    doc.save('mindmapper_' + new Date().getTime() + '.pdf');
-                };
-                // 删除canvas
-                document.querySelector("canvas").remove();
-                //重绘
-                raphael = new Raphael(10, 80, document.body.scrollWidth, 5000);
-                printGraph();
+                    // 删除canvas
+                document.querySelector("canvas").remove()
+                    //重绘
+                print()
             });
-        });
+        }
     </script>
 </body>
 
