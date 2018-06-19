@@ -1409,6 +1409,12 @@
 				// historyNode.text = tree[i].value;
 				historyNodeList.push(historyNode);
 			}
+			if (diff[i].operate == 3) {
+				for (var j = 0; j < historyNodeList.length; j++) {
+					if (historyNodeList[j].index == parseInt(diff[i].node.idx))
+						historyNodeList[j].text += '=>'+diff[i].node.value;
+				}
+			}
 		}
 		for (var i = 0; diff[i] != null; i++) {
 			for (var j = 0; j < historyNodeList.length; j++) 
