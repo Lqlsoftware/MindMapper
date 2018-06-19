@@ -963,8 +963,14 @@
 						'bid': currentBranchID},
 				dataType: 'json',
 				success: function(data) {
-					console.log('sucess!!!!!!');
+                    console.log('merge');
 					console.log(data);
+					if (data.code == 1) {
+                        console.log('auto merge sucess!!!!!!');
+					} else if (data.code == 2) {
+                        console.log('need fix');
+                        // 处理冲突
+					}
 				},
 				error: function(XMLHttpRequest, textStatus, errorThrown) {
 					//location.href = 'error.html';
