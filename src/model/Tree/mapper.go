@@ -2,6 +2,7 @@ package Tree
 
 import (
 	"encoding/json"
+	"sort"
 	"strconv"
 
 	"github.com/sergi/go-diff/diffmatchpatch"
@@ -93,8 +94,19 @@ func (mindMapper *MindMapperTree)ApplyDiff(diff *MapperDiff) MindMapperTree {
 
 func (mindMapper *MindMapperTree)DiffWith(other *MindMapperTree) MapperDiff {
 	engine := diffmatchpatch.New()
-	Diffs := MapperDiff{[]MapperNodeDiff{}}
+
+	var list []TreeNode
 	for _, curr := range mindMapper.Tree {
+		list = append(list, curr)
+	}
+	sort.Slice(list, func(i, j int) bool {
+		v1,_ := strconv.Atoi(list[i].Idx)
+		v2,_ := strconv.Atoi(list[j].Idx)
+		return v1 < v2
+	})
+	
+	Diffs := MapperDiff{[]MapperNodeDiff{}}
+	for _, curr := range list {
 		if last, exist := other.Tree[curr.Idx]; !exist {
 			// add
 			valueDiff := engine.DiffMain("", curr.Value, true)
@@ -115,7 +127,17 @@ func (mindMapper *MindMapperTree)DiffWith(other *MindMapperTree) MapperDiff {
 			Diffs.Nodes = append(Diffs.Nodes, diff)
 		}
 	}
-	for _, last := range other.Tree {
+
+	var list2 []TreeNode
+	for _, curr := range other.Tree {
+		list2 = append(list2, curr)
+	}
+	sort.Slice(list2, func(i, j int) bool {
+		v1,_ := strconv.Atoi(list2[i].Idx)
+		v2,_ := strconv.Atoi(list2[j].Idx)
+		return v1 < v2
+	})
+	for _, last := range list2 {
 		if _, exist := mindMapper.Tree[last.Idx]; !exist {
 			// delete
 			valueDiff := engine.DiffMain(last.Value, "", true)
