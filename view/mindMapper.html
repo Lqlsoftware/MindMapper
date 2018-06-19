@@ -306,7 +306,7 @@
 		//历史纪录绘制,因为历史记录是不可修改的
 		this.paintHistoryCurve = function(newNode,index,y2) {
 			//获取文字所占长度
-			if (this.children[index].text != null)
+			if (this.children[index].text != "")
 				var len = this.children[index].text.length;
 			else len = 0;
 			//绘制曲线
@@ -323,6 +323,9 @@
 			}
 			else if (this.children[index].diff == 2) {
 				this.edge[index] = raphael.path('M'+x1+','+eval(y1-70)+' Q'+x2+','+eval(y2-70)+' '+x3+','+eval(y2-70)+' '+'L'+x4+','+eval(y2-70)).attr({'stroke':'red','r':newNode.index,'rx':0});
+			}
+			else if (this.children[index].diff == 3) {
+				this.edge[index] = raphael.path('M'+x1+','+eval(y1-70)+' Q'+x2+','+eval(y2-70)+' '+x3+','+eval(y2-70)+' '+'L'+x4+','+eval(y2-70)).attr({'stroke':'#a23400','r':newNode.index,'rx':0});
 			}
 			else {
 				this.edge[index] = raphael.path('M'+x1+','+eval(y1-70)+' Q'+x2+','+eval(y2-70)+' '+x3+','+eval(y2-70)+' '+'L'+x4+','+eval(y2-70)).attr({'stroke':'#ae00ae','r':newNode.index,'rx':0});
@@ -333,7 +336,7 @@
 		//可修改的历史纪录绘制,用于出现数据冲突时的处理
 		this.paintConflictCurve = function(newNode,index,y2) {
 			//获取文字所占长度
-			if (this.children[index].text != null)
+			if (this.children[index].text != "")
 				var len = this.children[index].text.length;
 			else len = 0;
 			//绘制曲线
@@ -350,6 +353,9 @@
 			}
 			else if (this.children[index].diff == 2) {
 				this.edge[index] = raphael.path('M'+x1+','+eval(y1-70)+' Q'+x2+','+eval(y2-70)+' '+x3+','+eval(y2-70)+' '+'L'+x4+','+eval(y2-70)).attr({'stroke':'red','r':newNode.index,'rx':0});
+			}
+			else if (this.children[index].diff == 3) {
+				this.edge[index] = raphael.path('M'+x1+','+eval(y1-70)+' Q'+x2+','+eval(y2-70)+' '+x3+','+eval(y2-70)+' '+'L'+x4+','+eval(y2-70)).attr({'stroke':'#a23400','r':newNode.index,'rx':0});
 			}
 			else {
 				this.edge[index] = raphael.path('M'+x1+','+eval(y1-70)+' Q'+x2+','+eval(y2-70)+' '+x3+','+eval(y2-70)+' '+'L'+x4+','+eval(y2-70)).attr({'stroke':'#ae00ae','r':newNode.index,'rx':0});
@@ -1050,6 +1056,7 @@
                         var tree = data.data[0].Tree.tree;
                         var diff = data.data[0].Diff;
                         convertTreeToConflictModelTree(tree,diff);
+                        shadow2.css('display','none');
 					}
 				},
 				error: function(XMLHttpRequest, textStatus, errorThrown) {
@@ -1318,6 +1325,8 @@
 					diffNode = historyNodeList[j];
 			diffNode.diff = diff.nodes[i].operate;
 		}
+		console.log('差异list');
+		console.log(historyNodeList);
 		printHistoryGraph(historyNodeList);
 	}
 	//绘制历史思维导图
@@ -1379,21 +1388,21 @@
 		console.log('diff');
 		console.log(diff);
 		//在树中插入删除的节点,用户展现出差异图
-		for (var i = 0; diff.nodes[i] != null; i++) {
-			if (diff.nodes[i].operate == 2) {
+		for (var i = 0; diff[i] != null; i++) {
+			if (diff[i].operate == 2) {
 				//设置父节点
 				for (var j = 0; j < historyNodeList.length; j++) {
-					if (historyNodeList[j].index == parseInt(diff.nodes[i].node.father))
+					if (historyNodeList[j].index == parseInt(diff[i].node.father))
 						fatherNode = historyNodeList[j];
-					if (historyNodeList[j].index == diff.nodes[i].node.preBro)
+					if (historyNodeList[j].index == diff[i].node.preBro)
 						broNode = historyNodeList[j];
 				}
 				var historyNode = new node(fatherNode);
-				historyNode.index = parseInt(diff.nodes[i].node.idx);
-				historyNode.prebro = diff.nodes[i].node.rank == "1"?null:broNode;
-				historyNode.edgeNum = diff.nodes[i].node.edgeNum;
-				historyNode.rank = diff.nodes[i].node.rank;
-				historyNode.text = diff.nodes[i].node.value;
+				historyNode.index = parseInt(diff[i].node.idx);
+				historyNode.prebro = diff[i].node.rank == "1"?null:broNode;
+				historyNode.edgeNum = diff[i].node.edgeNum;
+				historyNode.rank = diff[i].node.rank;
+				historyNode.text = diff[i].node.value;
 				fatherNode.edgeNum++;
 				//还需要给节点父亲设置children[x]----在calcSpace中使用
 				fatherNode.children.push(historyNode);
@@ -1401,13 +1410,20 @@
 				historyNodeList.push(historyNode);
 			}
 		}
-		for (var i = 0; diff.nodes[i] != null; i++) {
+		for (var i = 0; diff[i] != null; i++) {
 			for (var j = 0; j < historyNodeList.length; j++) 
-				if (historyNodeList[j].index == diff.nodes[i].node.idx)
+				if (historyNodeList[j].index == diff[i].node.idx)
 					diffNode = historyNodeList[j];
-			diffNode.diff = diff.nodes[i].operate;
+			diffNode.diff = diff[i].operate;
 		}
-		printHistoryGraph(historyNodeList);
+		//更新globalIndex
+		nodeList = historyNodeList;
+		globalIndex = 1;
+		if (nodeList != null)
+			for (var i = 0; i < nodeList.length; i++) 
+				if (nodeList[i].index >= globalIndex)
+					globalIndex = nodeList[i].index + 1;
+		printConflictGraph(historyNodeList);
 	}
 	//绘制冲突思维导图
 	var printConflictGraph = function(historyNodeList) {
@@ -1424,7 +1440,7 @@
 		//绘制非根节点
 		subConflictRePaint(historyNodeList[0]);
 		//显示叉叉
-		close.css('display','block');
+		// close.css('display','block');
 	}
 	//绘制冲突子图
 	var subConflictRePaint = function(root) {
