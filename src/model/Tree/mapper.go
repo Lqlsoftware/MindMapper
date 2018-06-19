@@ -1,10 +1,9 @@
 package Tree
 
 import (
-"encoding/json"
+	"encoding/json"
 
-
-"github.com/sergi/go-diff/diffmatchpatch"
+	"github.com/sergi/go-diff/diffmatchpatch"
 )
 
 /*
@@ -18,6 +17,7 @@ import (
 type TreeNode struct {
 	Idx		string 	`json:"idx"`
 	Father	string 	`json:"father"`
+	EdgeNum int		`json:"edgeNum"`
 	Rank	string 	`json:"rank"`
 	Value 	string 	`json:"value"`
 }
@@ -55,48 +55,60 @@ func (mindMapper *MindMapperTree)updateHash() {
 	mindMapper.Hash = "0"
 }
 
+func (mindMapper *MindMapperTree)ApplyDiff(diff MapperDiff) MindMapperTree {
+	// deep copy
+	res := MindMapperTree{map[string]TreeNode{},"6666"}
+	for k,v := range mindMapper.Tree {
+		res.Tree[k] = v
+	}
+
+	// apply diff
+	for _,v := range diff.Nodes {
+		switch v.Operate {
+		case Add, Modify:
+			res.Tree[v.Node.Idx] = v.Node
+		case Delete:
+			delete(res.Tree, v.Node.Idx)
+		}
+	}
+	return res
+}
+
 func (mindMapper *MindMapperTree)DiffWith(other *MindMapperTree) MapperDiff {
 	engine := diffmatchpatch.New()
 	Diffs := MapperDiff{[]MapperNodeDiff{}}
-	for _,curr := range mindMapper.Tree {
-		if last, exist := other.Tree[curr.Idx];!exist {
+	for _, curr := range mindMapper.Tree {
+		if last, exist := other.Tree[curr.Idx]; !exist {
 			// add
 			valueDiff := engine.DiffMain("", curr.Value, true)
 			diff := MapperNodeDiff{
-				Node:		curr,
-				Operate:	Add,
-				Different:	valueDiff,
+				Node:      curr,
+				Operate:   Add,
+				Different: valueDiff,
 			}
 			Diffs.Nodes = append(Diffs.Nodes, diff)
 		} else if curr.Value != last.Value {
 			// modify
 			valueDiff := engine.DiffMain(curr.Value, last.Value, true)
 			diff := MapperNodeDiff{
-				Node:		curr,
-				Operate:	Modify,
-				Different:	valueDiff,
+				Node:      curr,
+				Operate:   Modify,
+				Different: valueDiff,
 			}
 			Diffs.Nodes = append(Diffs.Nodes, diff)
 		}
 	}
-	for _,last := range other.Tree {
-		if _, exist := mindMapper.Tree[last.Idx];!exist {
+	for _, last := range other.Tree {
+		if _, exist := mindMapper.Tree[last.Idx]; !exist {
 			// delete
 			valueDiff := engine.DiffMain(last.Value, "", true)
 			diff := MapperNodeDiff{
-				Node:		last,
-				Operate:	Delete,
-				Different:	valueDiff,
+				Node:      last,
+				Operate:   Delete,
+				Different: valueDiff,
 			}
 			Diffs.Nodes = append(Diffs.Nodes, diff)
 		}
 	}
 	return Diffs
-}
-
-func (mindMapper *MindMapperTree)MergeFrom(Diff MapperDiff) {
-	for _, add := range Diff.Nodes {
-		mindMapper.addNode(&add.Node)
-	}
-	mindMapper.updateHash()
 }

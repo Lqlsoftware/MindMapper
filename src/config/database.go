@@ -5,7 +5,6 @@ const (
 	DB_NAME 		= "mindmapper"
 
 	USER_CNAME		= "user"
-	TEAM_CNAME		= "team"
 	BRANCH_CNAME	= "branch"
 	BRANCHSET_CNAME	= "branchset"
 	COMMIT_CNAME	= "commit"

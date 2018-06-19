@@ -18,8 +18,14 @@
 		<div class="logo">MindMapper</div>
 		<div class="op_user" id="register">注册</div>
 		<div class="op_user" id="login">登录</div>
+<<<<<<< HEAD
 	</div>
 	<div class="clearfix"></div>
+		<div class="op_user" id="logout" hidden="hidden">退出</div>
+		<div class="op_user" id="my" hidden="hidden">测试</div>
+	</div>
+	<div class="clearfix"></div>
+	<!--操作项-->
 	<img class="op" src="img/back.svg" width="24" id="back">
 	<img class="op" src="img/right.svg" width="24" id="forward">
 	<img class="op" src="img/form.svg" width="24" id="save">
@@ -92,6 +98,52 @@
 	</div>
 	<!--阴影-->
 	<div class="shadow" hidden="hidden"></div>
+	<!--我参加的项目弹窗-->
+	<div class="form-box modalBox myProjectModel" hidden="hidden">
+		<div class="form-top">
+			<div class="form-top-left" style="width: 100%">
+				<h3>我参加的项目</h3>
+	    		<div style="color:#fff;cursor:pointer;display:inline-block;float:right;" id="newProject">新建一个项目</div>
+	    		<!-- <div style="color:#fff;cursor:pointer;display:inline-block;float:right;margin-right: 20px;">加入一个项目</div>  -->
+			</div>
+	    </div>
+	    <div class="form-bottom projectList" style="color: #fff"></div>
+	</div>
+	<!--项目主分支查看-->
+	<div class="form-box modalBox myBranchModel" hidden="hidden">
+		<div class="form-top">
+			<div class="form-top-left" style="width: 100%">
+				<h3 id="projectName"></h3>
+	    		<div style="color:#fff;cursor:pointer;display:inline-block;float:right;" id="newBranch">新建一个分支</div>
+			</div>
+	    </div>
+	    <div class="form-bottom mainBranchList" style="color: #fff"></div>
+	</div>
+	<!--我的项目分支查看-->
+	<div class="form-box modalBox mySubmitsModel" hidden="hidden">
+		<div class="form-top">
+			<div class="form-top-left" style="width: 100%">
+				<h3 id="branchName"></h3>
+				<div style="color:#fff;cursor:pointer;display:inline-block;float:right;" id="backToMainbranch">返回该项目</div>
+			</div>
+	    </div>
+	    <div class="form-bottom mySubmitsList" style="color: #fff">
+	    </div>
+	</div>
+	<div class="modalBox inputModel" hidden="hidden">
+		<input type="text" name="" placeholder="输入工程名" id="inputContent">
+	</div>
+	<div class="modalBox inputModel2" hidden="hidden">
+		<input type="text" name="" placeholder="输入分支名" id="inputContent2">
+	</div>
+	<div class="modalBox inputModel3" hidden="hidden">
+		<input type="text" name="" placeholder="输入title" id="inputContent3">
+	</div>
+	<div><img src="img/close.png" width="40" style="float: right;cursor: pointer;" id="close" hidden="hidden"></div>
+	<div class="clearfix"></div>
+	<!--阴影-->
+	<div class="shadow" hidden="hidden"></div>
+	<div class="shadow2" hidden="hidden"></div>
 </body>
 
 <script>
@@ -100,12 +152,21 @@
 
 	var nodeList = [];
 	var globalIndex = 0;
+	//分支颜色
+	var paintColor =  new Array("red","orange","yellow","green","blue","pink","purple");
+	//鼠标坐标
+	var positionx;
+	var positiony;
+	var mousedown=0;
 	/////////////////////////////
 	//每个节点都是一个对象，设置类//
 	/////////////////////////////
 	var node = function(parent) {
 		//节点序号
 		this.index = 0;
+		this.paint=0;
+		//分支颜色
+		this.color=0;
 		//节点坐标
 		this.x = 0;
 		this.y = 0;
@@ -128,7 +189,13 @@
 		//节点点击
 		this.click = false;
 		//节点在子树中的位置
-		this.num = 0;
+		this.rank = 0;
+		//节点的修改状态，仅用于历史图像绘制0-不变，1-增加，2-删除
+		this.diff = 0
+		//设置分支颜色
+		this.setColor = function(color){
+			this.color = color;
+		}
 		//文字设置于提取
 		this.setText = function(text) {
 			this.text = text;
@@ -155,7 +222,13 @@
 			this.x = x;
 			this.y = y;
 			//添加节点
-			$('body').append('<div class="plus" style="left:'+x+'px;top:'+y+'px" onclick="addChild('+this.index+')">'+'+'+'</div>');
+			$('body').append('<div class="plus" style="left:'+x+'px;top:'+y+'px" onmousedown="mouseM('+x+','+this.index+','+y+')">'+'+'+'</div>');
+		}
+		this.setHistoryNode = function(x,y) {
+			this.x = x;
+			this.y = y;
+			//添加节点
+			$('body').append('<div class="plus" style="left:'+x+'px;top:'+y+'px">'+'+'+'</div>');
 		}
 		//设置兄长
 		this.setPreBro = function(bro) {
@@ -170,11 +243,18 @@
 			nodeList.push(newNode);
 			this.children.push(newNode);
 			globalIndex++;
+			$('#divmove').remove();
 			newNode.setDepth(this.depth+1);
+			if(newNode.depth==2){
+				newNode.setColor(globalIndex%7);
+			}
+			else{
+				newNode.setColor(newNode.parent.color);
+			}
 			if (this.edgeNum > 0)
 				newNode.setPreBro(this.children[this.edgeNum-1]);
 			this.edgeNum += 1;
-			newNode.num=this.edgeNum-1;
+			newNode.rank=this.edgeNum-1;
 			//如果通过图操作改变了模型树的状态，还需要改变链表的状态
 			if (option == 0) {
 				optionList.remove(optionList.currentNode);
@@ -183,17 +263,19 @@
 			}
 			calcSpace(nodeList[0]);
 			updateLocation(nodeList[0]);
+			newNode.paint=1;
 			print();
 			rePaint();
+			newNode.paint=0;
 		}
 		//删除孩子 ---- option: 0表示通过delete删除，1表示通过前进后退删除
 		this.deleteNode = function(option) {
 			var parent = this.parent;
 			var index = this.index;
-			if (this.num == 0 && parent.edgeNum > 1) 
+			if (this.rank == 0 && parent.edgeNum > 1) 
 				parent.children[1].setPreBro(null);
-			else if (this.num != parent.edgeNum - 1)
-				parent.children[this.num+1].setPreBro(parent.children[this.num-1]);
+			else if (this.rank != parent.edgeNum - 1)
+				parent.children[this.rank+1].setPreBro(parent.children[this.rank-1]);
 			//从线性数组中删除节点以及其孩子
 			for (var i = 0; i < nodeList.length; i++)
 				if (nodeList[i].index == index) {
@@ -201,10 +283,10 @@
 				}
 			//从父亲的孩子列表中删除节点
 			console.log('edgeNum '+parent.edgeNum);
-			for(var i=this.num+1;i<parent.edgeNum-1;i++){
-				parent.children[i].num--;
+			for(var i=this.rank+1;i<parent.edgeNum-1;i++){
+				parent.children[i].rank--;
 			}
-			parent.children.splice(this.num,1);
+			parent.children.splice(this.rank,1);
 			parent.edgeNum -= 1;
 			delete this;
 			//如果通过图操作改变了模型树的状态，还需要改变链表的状态
@@ -213,7 +295,6 @@
 				optionList.append(2,this);
 				optionList.currentNode = optionList.currentNode.next;
 			}
-			
 			//console.log(nodeList);
 			calcSpace(nodeList[0]);
 			updateLocation(nodeList[0]);
@@ -238,10 +319,55 @@
 				x4 = x3 + len*15;
 			//r标识边对应的节点的index
 			//edge[index]中的index是父亲的第index个孩子
-			this.edge[index] = raphael.path('M'+x1+','+eval(y1-70)+' Q'+x2+','+eval(y2-70)+' '+x3+','+eval(y2-70)+' '+'L'+x4+','+eval(y2-70)).attr({'stroke':'red','r':newNode.index,'rx':0});
+			this.edge[index] = raphael.path('M'+x1+','+eval(y1-70)+' Q'+x2+','+eval(y2-70)+' '+x3+','+eval(y2-70)+' '+'L'+x4+','+eval(y2-70)).attr({'stroke',paintColor[newNode.color],'r':newNode.index,'rx':0});
 			//点击激活事件
 			this.edge[index].click(active);
 			newNode.setNode(x4,y2);
+			newNode.putText(newNode.text,len);
+			$('input').eq(newNode.index).val(newNode.text);
+		}
+		//动态绘画分支
+		this.repaintCurve = function(newNode,index,y2) {
+			//绘制曲线
+			//x1,y1为起始点；x2为贝塞尔曲线横坐标中间点;x3为贝塞尔曲线横坐标终点,x4为直线横坐标终点,y2为线条终点
+			var x1 = this.x;
+			var y1 = this.y;
+			var x2 = x1 + 10;
+			var x3 = x2 + 10;
+			var	x4 = x3 + 80;
+			var p=raphael.path('M'+x1+','+y1+' '+'L'+x1+','+y1);
+ 			//var p=raphael.path('cx:'+x1+','+'cy:'+y1+','+'r:'+0);
+			p.animate({path:'M'+x1+','+eval(y1-70)+' Q'+x2+','+eval(y2-70)+' '+x3+','+eval(y2-70)+' '+'L'+x4+','+eval(y2-70)},500).attr('stroke',paintColor[newNode.color],'r':newNode.index,'rx':0);
+			this.edge[index].click(active);
+			newNode.setNode(x4,y2);
+			newNode.putText(newNode.text,len);
+			$('input').eq(newNode.index).val(newNode.text);
+		}
+		//历史纪录绘制,因为历史记录是不可修改的
+		this.paintHistoryCurve = function(newNode,index,y2) {
+			//获取文字所占长度
+			if (this.children[index].text != null)
+				var len = this.children[index].text.length;
+			else len = 0;
+			//绘制曲线
+			//x1,y1为起始点；x2为贝塞尔曲线横坐标中间点;x3为贝塞尔曲线横坐标终点,x4为直线横坐标终点,y2为线条终点
+			var x1 = this.x;
+			var y1 = this.y;
+			var x2 = x1 + 10;
+			var x3 = x2 + 10;
+			var	x4 = x3 + 80;
+			if (len > 5)
+				x4 = x3 + len*15;
+			if (this.children[index].diff == 1) {
+				this.edge[index] = raphael.path('M'+x1+','+eval(y1-70)+' Q'+x2+','+eval(y2-70)+' '+x3+','+eval(y2-70)+' '+'L'+x4+','+eval(y2-70)).attr({'stroke',paintColor[newNode.color],'r':newNode.index,'rx':0});
+			}
+			else if (this.children[index].diff == 2) {
+				this.edge[index] = raphael.path('M'+x1+','+eval(y1-70)+' Q'+x2+','+eval(y2-70)+' '+x3+','+eval(y2-70)+' '+'L'+x4+','+eval(y2-70)).attr({'stroke',paintColor[newNode.color],'r':newNode.index,'rx':0});
+			}
+			else {
+				this.edge[index] = raphael.path('M'+x1+','+eval(y1-70)+' Q'+x2+','+eval(y2-70)+' '+x3+','+eval(y2-70)+' '+'L'+x4+','+eval(y2-70)).attr({'stroke',paintColor[newNode.color],'r':newNode.index,'rx':0});
+			}
+			newNode.setHistoryNode(x4,y2);
 			newNode.putText(newNode.text,len);
 			$('input').eq(newNode.index).val(newNode.text);
 		}
@@ -260,20 +386,20 @@
 			$('body').append('<input id="'+this.index+'" class="text" style="left:'+x+'px;top:'+y+'px;width:'+width+'px;" placeholder="text" onblur="getText('+this.index+')" value="'+content+'">');
 		}
 	}
-	//2
+	//添加子树
 	var MoveAddChild = function(node){
 		pnode = node.parent;
 		nodeList.push(node);
 		if(node.edgeNum!=0){
 			addSubTree(node);
 		}
-		for(var i=node.num+1;i<pnode.edgeNum-1;i++){
-			pnode.children[i].num++;
+		for(var i=node.rank+1;i<pnode.edgeNum-1;i++){
+			pnode.children[i].rank++;
 		}
 		pnode.edgeNum +=1;
-		pnode.children.splice(node.num,0,node);
-		if(node.num<pnode.edgeNum-1){
-			pnode.children[node.num+1].setPreBro(node);
+		pnode.children.splice(node.rank,0,node);
+		if(node.rank<pnode.edgeNum-1){
+			pnode.children[node.rank+1].setPreBro(node);
 		}
 		calcSpace(nodeList[0]);
 		updateLocation(nodeList[0]);
@@ -469,6 +595,17 @@
 				node = node - 1;
 			}
 			for (var i = 0; i < root.edgeNum; i++) {
+				current += root.children[i].up + root.children[i].down;
+				if (current >= len/2) {
+					node = i;
+					break;
+				}
+			}
+			//如果这个临界点本身在平均值下，则更改临界点为其兄长
+			if ((current - root.children[node].down + 20 > len/2 || root.children[node].down > len/2) && node != 0 ) {
+				node = node - 1;
+			}
+			for (var i = 0; i < root.edgeNum; i++) {
 				//如果该节点没有兄长，确定第一个孩子相对自己的高度
 				if (root.prebro == null && i == 0) {
 					var diff = 0;
@@ -507,7 +644,12 @@
 			return root;
 		else {
 			for (var i = 0; i < root.edgeNum; i++) {
-				root.paintCurve(root.children[i],i,root.children[i].y);
+				if(root.children[i].paint==1){
+					root.repaintCurve(root.children[i],i,root.children[i].y);
+				}
+				else{
+					root.paintCurve(root.children[i],i,root.children[i].y);
+				}
 				subRePaint(root.children[i]);
 			}
 		}
@@ -534,6 +676,30 @@
 		console.log("");
 	}
 
+	//绘制思维导图
+	var printGraph = function() {
+		//清空画布
+		raphael.clear();
+		$('.plus').remove();
+		$('input').remove();
+		//初始化绘制
+		raphael.path('M40,400 L120,400').attr('stroke','#abc');
+		nodeList[0].setNode(120,470);
+		console.log(historyNodeList);
+		calcSpace(nodeList[0]);
+		updateLocation(nodeList[0]);
+		//绘制非根节点
+		subRePaint(nodeList[0]);
+	}
+
+	//打印计算结果，用于测试
+	var print = function() {
+		for (var i = 0; i < nodeList.length; i++) {
+			console.log('index: '+nodeList[i].index+'  depth: '+nodeList[i].depth+'  上限：'+nodeList[i].up+'  下限: '+nodeList[i].down+'  纵坐标: '+nodeList[i].y+'  内容: '+nodeList[i].text);
+		}
+		console.log("");
+	}
+
 	var raphael;
 	//初始化图形
 	window.onload = function() {
@@ -541,6 +707,9 @@
 		$('.shadow').css('width',width);
 		raphael = new Raphael(10,80,width,5000);
 		raphael.path('M40,400 L120,400').attr('stroke','#abc');
+		$('.shadow2').css('width',width);
+		raphael = new Raphael(10,80,width,5000);
+		// raphael.path('M40,400 L120,400').attr('stroke','#abc');
 		var myRoot = new node(null);
 		myRoot.setIndex(0);
 		nodeList.push(myRoot);
@@ -550,14 +719,164 @@
 		optionList.head = new listnode(0,nodeList[0]);
 		optionList.currentNode = optionList.head;
 		print();
+		// myRoot.setNode(120,470);
+		// myRoot.setDepth(1);
+		optionList.head = new listnode(0,nodeList[0]);
+		optionList.currentNode = optionList.head;
+		// print();
+//testConvert();
+		//判断用户登录情况
+		$.ajax({
+			type: 'GET',
+			url: '/user',
+			dataType: 'json',
+			success: function(data) {
+				console.log(data);
+				if (data.code >= 0) {
+					login.css('display','none');
+					register.css('display','none');
+					logout.css('display','block');
+					my.css('display','block');
+					my.html(data.data[0].username);
+				}
+			},
+			error: function(XMLHttpRequest, textStatus, errorThrown) {
+				//location.href = 'error.html';
+			} 
+		})
 	}
-	
+	function getMousePos(event) {
+			var e = event || window.event;
+			var scrollX = document.documentElement.scrollLeft || document.body.scrollLeft;
+			var scrollY = document.documentElement.scrollTop || document.body.scrollTop;
+			var x = e.pageX || e.clientX + scrollX;
+			var y = e.pageY || e.clientY + scrollY;
+			return { 'x': x, 'y': y };
+		}
+	//确定节点位置
+	var locateNode = function(index){
+		for(var i=0;i<globalIndex;i++){
+			if(nodeList[i].index==index){
+				return nodeList[i];
+			}
+		}
+	}
+	//鼠标移动事件
+	var mouseM = function(x,index,y){
+		$('body').append('<div id="divmove" position="absolute" class="plus" style="left:'+x+'px;top:'+y+'px" onmouseup="addChild('+index+')">'+'+'+'</div>');
+		mousedown=1;
+		$(document).mousemove(function(){
+			if(mousedown){
+				var position;
+				var newNode = locateNode(index);
+				var x2=newNode.x+10;
+				var x3=x2+10;
+				position=getMousePos();
+				var x4=position.x-7;
+				var y2= position.y-5;
+				rePaint();
+				$('body').append('<div id="divmove" position="absolute" class="plus" style="left:'+x4+'px;top:'+y2+'px" onmouseup="moveChild('+x4+','+index+','+y2+')">'+'+'+'</div>');
+				$('#divmove').css('left',x4);
+				$('#divmove').css('top',y2);
+				if(index>0){
+					raphael.path('M'+newNode.x+','+eval(newNode.y-70)+' Q'+x2+','+eval(y2-70)+' '+x3+','+eval(y2-70)+' '+'L'+position.x+','+eval(position.y-70)).attr('stroke',paintColor[newNode.color]);
+				}
+				else{
+					raphael.path('M'+newNode.x+','+eval(newNode.y-70)+' Q'+x2+','+eval(y2-70)+' '+x3+','+eval(y2-70)+' '+'L'+position.x+','+eval(position.y-70)).attr('stroke',paintColor[(globalIndex+1)%7]);
+				}
+		});
+	}
+	//插入子树
+	var moveChild = function(x,index,y){
+		var newNode = locateNode(index);
+		var length = Math.sqrt((newNode.x-x)*(newNode.x-x)+(newNode.y-y)*(newNode.y-y));
+		if(length<20)
+			addChild(index);
+		else{
+			mousedown=0;
+			calculate(x,index,y);
+			rePaint();
+		}
+	}
+	//计算插入子树
+	//记录最近的节点
+	var  calculate = function(x,index,y){
+		var group = [];
+		var newNode = locateNode(index);
+		group[0] = nodeList[0];
+		var positioni;
+		var nearest=10000;
+		var position;
+		var pnode;
+		var nodeindex;
+		//队列首部和尾部
+		var gh = 0;
+		var gl = 0;
+		//上面最近和下面最近
+		var nearh=10000;
+		if(nodeList[0].x-x>0){
+			rePaint();
+			return 1;
+		}
+		while(gh<=gl){
+			positioni=-1;
+			for(var i=0;i<group[gh].edgeNum;i++){
+				if((group[gh].x-x)>0){
+					break;
+				}
+				else{
+					gl++;
+					group[gl]=group[gh].children[i];
+					var length = Math.sqrt((group[gh].children[i].x-x)*(group[gh].children[i].x-x)+(group[gh].children[i].y-y)*(group[gh].children[i].y-y));
+					if(length<nearh){
+						positioni=i;
+						nearh=length;
+					}
+				}
+			}
+			if(nearest>nearh){
+				nearest=nearh;
+				position=positioni;
+				pnode=group[gh];
+			}
+			gh++;
+		}
+		if(nearest<=25){
+			var insertnodde = pnode.children[position];
+			newNode.parent.edgeNum--;
+			if(newNode.rank<newNode.parent.edgeNum){
+				newNode.parent.children[newNode.rank+1].setPreBro(newNode.prebro);
+			}
+			newNode.parent.children.splice(newNode.rank,1);
+			for(var i=0;i<newNode.parent.edgeNum;i++){
+				newNode.parent.children[i].rank=i;
+			}
+			insertnodde.children.push(newNode);
+			insertnodde.edgeNum += 1;
+			for(var i=0;i<insertnodde.edgeNum;i++){
+				insertnodde.children[i].rank=i;
+			}
+			if (insertnodde.edgeNum > 1)
+				newNode.setPreBro(insertnodde.children[insertnodde.edgeNum-2]);
+			else
+				newNode.prebro = null;
+			newNode.parent = insertnodde;
+			newNode.setDepth(insertnodde.depth+1);
+			calcSpace(nodeList[0]);
+			updateLocation(nodeList[0]);
+			newNode.paint=1;
+			print();
+			rePaint();
+			newNode.paint=0;
+		}
+	}
 
 	//用于连接div与类的功能函数
 	addChild = function(index) {
 		for (var i = 0; i < nodeList.length; i++)
 			if (nodeList[i].index == index)
 				nodeList[i].addChild(0);
+		mousedown = 0;
 	}
 
 	//完成增删改后进行修改
@@ -566,6 +885,547 @@
 		nodeList[index].setText(text);
 		rePaint();
 	}
+
+//以下为固定位置的按钮函数
+	//后退按钮
+	var back = $('#back');
+	back.click(function() {
+		var current = optionList.currentNode;
+		var op = current.option;
+		var node = current.node;
+		switch (op) {
+			case 1: {
+				node.deleteNode(1);
+				optionList.currentNode = current.prev;
+				break;
+			}
+			case 2: {
+				//node.addChild();
+				break;
+			}
+			default: break;
+		}
+	})
+
+	////////////////////////////////////////////////////////////
+	//全局变量
+	//当前项目ID
+	var currentTreeId;
+	//用户绘制历史思维导图的数组
+	var historyNodeList;
+	//项目数据
+	var projectData;
+	//当前分支ID
+	var currentBranchID;
+	//分支数据
+	var branchData;
+	//当前提交ID
+	var currentSubmitID;
+	//提交数据
+	var submitData;
+	///////////////////////////////////////////////////////////
+
+	//前方大量AJAX出没
+	//将思维导图上传至服务器
+	var save = $('#save');
+	save.click(function() {
+		$('.inputModel3').css('display','block');
+		var title;
+		document.onkeydown=function(event){
+		    var e = event || window.event || arguments.callee.caller.arguments[0];
+		    if(e && e.keyCode==13) {
+		    	title = $('#inputContent3').val();
+		    	if (title == '' || title == undefined || title== null) {
+					alert('title不能为空');
+			    	return;
+			    }
+			    $('.inputModel3').css('display','none');
+			    var tree = convertNodeListToSavedTree(nodeList);
+				var treeString = JSON.stringify(tree);
+				$.ajax({
+					type: 'POST',
+					url: '/commit',
+					data: {
+						'bid': currentBranchID,
+						'tree': treeString,
+						'title': title,
+					},
+					dataType: 'json',
+					success: function(data) {
+						console.log('上传返回的数据');
+						console.log(data);
+					},
+					error: function(XMLHttpRequest, textStatus, errorThrown) {
+						//location.href = 'error.html';
+					}
+				})
+		    }
+		}
+	})
+
+	var convertNodeListToSavedTree = function(nodeList) {
+		var tree = [];
+		for (var i = 0; i < nodeList.length; i++) {
+			var saveNode;
+			//存储当前节点的必要信息
+			saveNode = {
+				idx: "" + nodeList[i].index,
+				father: "" + (nodeList[i].parent==null?-1:nodeList[i].parent.index),
+				rank: "" + nodeList[i].rank,
+				edgeNum: nodeList[i].edgeNum,
+				value: 'null'
+			}
+			tree.push(saveNode);
+		}
+		return tree;
+	}
+
+	//不覆盖图标的阴影
+	var shadow2 = $('.shadow2');
+	//叉叉
+	var close = $('#close');
+	//获取历史纪录
+	var myHistory = $('#history');
+	var myProjectModel = $('.myProjectModel');
+	var projectList = $('.projectList');
+	var myBranchModel = $('.myBranchModel');
+	var mainBranchList = $('.mainBranchList');
+	var mySubmitsModel = $('.mySubmitsModel');
+	var mySubmitsList = $('.mySubmitsList');
+	//点击第四个按钮进入我的项目列表
+	myHistory.click(function() {
+		projectsEntranceHandler();
+	})
+	//进入项目列表的操作函数
+	var projectsEntranceHandler = function() {
+		myProjectModel.css('display','block');
+		shadow2.css('display','block');
+		myBranchModel.css('display','none');
+		mySubmitsModel.css('display','none');
+		projectList.html('');
+		$.ajax({
+			type: 'GET',
+			url: '/project',
+			dataType: 'json',
+			success: function(data) {
+				console.log('获取项目列表');
+				console.log(data);
+				projectData = data.data[0];
+				var html = '';
+				for (var i = 0; projectData != null && i < projectData.length; i++)
+					html += '<div class="project"><img src="img/Category.png" width="20">'+projectData[i].name+'</div>';
+				projectList.html(html);
+				projectHandler();
+			},
+			error: function(XMLHttpRequest, textStatus, errorThrown) {
+				//location.href = 'error.html';
+			}
+		})
+	}
+	//进入项目列表后的操作
+	var projectHandler = function() {
+		//点击该项目进入该项目的主分支提交记录列表---该代码在新建项目中还有一段拷贝
+		var project = $('.project');
+		project.click(function() {
+			var index = project.index(this);
+			currentTreeId = projectData[index].treeId;
+			$('#projectName').html('项目：'+projectData[index].name);
+			branchEntranceHandler();
+		})
+	}
+	//通过该函数获取分支信息
+	var branchEntranceHandler = function() {
+		$.ajax({
+			type: 'GET',
+			url: '/branch',
+			data: {'pid': currentTreeId},
+			dataType: 'json',
+			success: function(data) {
+				console.log('获取分支列表');
+				console.log(data);
+				//获取分支数据
+				branchData = data.data;
+				myProjectModel.css('display','none');
+				myBranchModel.css('display','block');
+				var html = '';
+				html += '<div class="left searchSubmits">'+data.data[0].startTime+'  '+data.data[0].name+'</div><div class="clearfix"></div>'
+				if (data.data[1] != null)
+					for (var i = 0; i < data.data[1].length; i++) {
+						html += '<div class="left searchSubmits">'+data.data[1][i].startTime+'  '+data.data[1][i].name+'</div><div class="right merge">发布</div><div class="right edit">编辑</div><div class="clearfix"></div>'
+					}
+				mainBranchList.html(html);
+				getSubmits();
+				editHandler();
+			},
+			error: function(XMLHttpRequest, textStatus, errorThrown) {
+				//location.href = 'error.html';
+			}
+		})
+	}
+	//编辑处理
+	var editHandler = function() {
+		var edit = $('.edit');
+		edit.click(function() {
+			myBranchModel.css('display','none');
+			var index = edit.index(this);
+			var branchName;
+			//获取当前分支id
+			currentBranchID = branchData[1][index].id;
+			$.ajax({
+				type: 'GET',
+				url: '/commits',
+				data: {'id': currentBranchID},
+				dataType: 'json',
+				success: function(data) {
+					console.log('提交信息');
+					console.log(data);
+					submitData = data.data[0];
+					currentSubmitID = data.data[0][0].id;
+					var html = '';
+					for (var i = 0; i < data.data[0].length; i++) {
+						html += '<div class="record"><div class="left">'+data.data[0][i].time+'</div><div class="left">'+data.data[0][i].title+'</div><div class="right">'+data.data[0][i].submitter+'</div><div class="clearfix"></div></div>';
+					}
+					mySubmitsList.html(html);
+					recordHandler();
+				},
+				error: function(XMLHttpRequest, textStatus, errorThrown) {
+					//location.href = 'error.html';
+				}
+			})
+			$.ajax({
+				type: 'GET',
+				url: '/commit',
+				data: {'id': currentSubmitID},
+				dataType: 'json',
+				success: function(data) {
+					var tree = data.data[0].tree.tree;
+					var diff = data.data[0].diff;
+					convertTreeToModelTree(tree,diff);
+					mySubmitsModel.css('display','none');
+					shadow2.css('display','none');
+				},
+				error: function(XMLHttpRequest, textStatus, errorThrown) {
+					//location.href = 'error.html';
+				}
+			})
+		})
+	}
+	//点击查看获取该分支的提交列表
+	var getSubmits = function() {
+		var searchSubmits = $('.searchSubmits');
+		searchSubmits.click(function() {
+			myBranchModel.css('display','none');
+			mySubmitsModel.css('display','block');
+			var index = searchSubmits.index(this);
+			var branchName;
+			//获取当前分支id和名字
+			if (index == 0) {
+				currentBranchID = branchData[0].id;
+				branchName = branchData[0].name;
+			}
+			else {
+				currentBranchID = branchData[1][index-1].id;
+				branchName = branchData[1][index-1].name;
+			}
+			$('#branchName').html('分支：'+branchName);
+			submitEntranceHandler();
+		})
+	}
+	//通过该函数获取提交信息
+	var submitEntranceHandler = function() {
+		$.ajax({
+			type: 'GET',
+			url: '/commits',
+			data: {'id': currentBranchID},
+			dataType: 'json',
+			success: function(data) {
+				console.log('提交信息');
+				console.log(data);
+				submitData = data.data[0];
+				console.log('2');
+				console.log(submitData);
+				var html = '';
+				for (var i = 0; i < data.data[0].length; i++) {
+					html += '<div class="record"><div class="left">'+data.data[0][i].time+'</div><div class="left">'+data.data[0][i].title+'</div><div class="right">'+data.data[0][i].submitter+'</div><div class="clearfix"></div></div>';
+				}
+				mySubmitsList.html(html);
+				recordHandler();
+			},
+			error: function(XMLHttpRequest, textStatus, errorThrown) {
+				//location.href = 'error.html';
+			}
+		})
+	}
+	//处理历史记录，将该记录对应的思维导图并给出差异
+	var recordHandler = function() {
+		var record = $('.record');
+		record.click(function() {
+			var index = record.index(this);
+			currentSubmitID = submitData[index].id;
+			$.ajax({
+				type: 'GET',
+				url: '/commit',
+				data: {'id': currentSubmitID},
+				dataType: 'json',
+				success: function(data) {
+					var tree = data.data[0].tree.tree;
+					var diff = data.data[0].diff;
+					convertTreeToHistoryModelTree(tree,diff);
+					mySubmitsModel.css('display','none');
+					shadow2.css('display','none');
+				},
+				error: function(XMLHttpRequest, textStatus, errorThrown) {
+					//location.href = 'error.html';
+				}
+			})
+		})
+	}
+	//新建一个项目
+	$('#newProject').click(function() {
+		//项目名
+		var name;
+		$('.inputModel').css('display','block');
+		document.onkeydown=function(event){
+		    var e = event || window.event || arguments.callee.caller.arguments[0];
+		    if(e && e.keyCode==13){
+		        name = $('#inputContent').val();
+		        if (name == '' || name == undefined || name == null) {
+		        	alert('工程名不能为空');
+		        	return;
+		        }
+		        $('.inputModel').css('display','none');
+		        $.ajax({
+					type: 'POST',
+					url: '/project',
+					data: {'name': name},
+					dataType: 'json',
+					success: function(data) {
+						console.log(data);
+						projectsEntranceHandler();
+					},
+					error: function(XMLHttpRequest, textStatus, errorThrown) {
+						//location.href = 'error.html';
+					}
+				})
+		    }
+	    }; 
+	})
+	//分支菜单，返回到项目菜单
+	$('#backToMainbranch').click(function() {
+		myBranchModel.css('display','block');
+		mySubmitsModel.css('display','none');
+	})
+	//新建分支
+	$('#newBranch').click(function() {
+		var name;
+		$('.inputModel2').css('display','block');
+		document.onkeydown=function(event){
+		    var e = event || window.event || arguments.callee.caller.arguments[0];
+		    if(e && e.keyCode==13){
+		        name = $('#inputContent2').val();
+		        if (name == '' || name == undefined || name == null) {
+		        	alert('分支名不能为空');
+		        	return;
+		        }
+		        $('.inputModel2').css('display','none');
+		  		$.ajax({
+					type: 'POST',
+					url: '/branch',
+					data: {'pid': currentTreeId,'name': name},
+					dataType: 'json',
+					success: function(data) {
+						console.log('返回的branch数据');
+						console.log(data);
+						branchEntranceHandler();
+					},
+					error: function(XMLHttpRequest, textStatus, errorThrown) {
+						//location.href = 'error.html';
+					}
+				})
+		    }
+		}
+	})
+	//将从后台拉取的数组转换成模型树--用于编辑模型
+	var convertTreeToModelTree = function(tree,diff) {
+		nodeList = [];
+		var Root = new node(null);
+		nodeList.push(Root);
+		for (var i = 0; i < tree.length; i++) {
+			//设置父节点
+			var myNode = new node(i==0?null:nodeList[tree[i].father]);
+			myNode.index = tree[i].idx;
+			myNode.prebro = tree[i].rank == 1?null:nodeList[tree[i].prebro];
+			myNode.edgeNum = tree[i].edgeNum;
+			myNode.rank = tree[i].rank;
+			//还需要给节点父亲设置children[x]----在calcSpace中使用
+			if (i != 0) 
+				nodeList[tree[i].father].children.push(myNode);
+			// historyNode.text = tree[i].value;
+			nodeList.push(myNode);
+		}
+		for (var i = 0; i < diff.length; i++) 
+			nodeList[diff[i].node].diff = diff[i].operate;
+		printGraph(nodeList);
+	}
+	//将从后台拉取的数组转换成模型树--用于历史模型
+	var convertTreeToHistoryModelTree = function(tree,diff) {
+		var historyNodeList = [];
+		var historyRoot = new node(null);
+		historyNodeList.push(historyRoot);
+		for (var i = 0; i < tree.length; i++) {
+			//设置父节点
+			var historyNode = new node(i==0?null:historyNodeList[tree[i].father]);
+			historyNode.index = tree[i].idx;
+			historyNode.prebro = tree[i].rank == 1?null:historyNodeList[tree[i].prebro];
+			historyNode.edgeNum = tree[i].edgeNum;
+			historyNode.rank = tree[i].rank;
+			//还需要给节点父亲设置children[x]----在calcSpace中使用
+			if (i != 0) 
+				historyNodeList[tree[i].father].children.push(historyNode);
+			// historyNode.text = tree[i].value;
+			historyNodeList.push(historyNode);
+		}
+		for (var i = 0; i < diff.length; i++) 
+			historyNodeList[diff[i].node].diff = diff[i].operate;
+		printHistoryGraph(historyNodeList);
+	}
+	//绘制历史思维导图
+	var printHistoryGraph = function(historyNodeList) {
+		//清空画布
+		raphael.clear();
+		$('.plus').remove();
+		$('input').remove();
+		//初始化绘制
+		raphael.path('M40,400 L120,400').attr('stroke','#abc');
+		historyNodeList[0].setHistoryNode(120,470);
+		console.log(historyNodeList);
+		calcSpace(historyNodeList[0]);
+		updateLocation(historyNodeList[0]);
+		//绘制非根节点
+		subHistoryRePaint(historyNodeList[0]);
+		//显示叉叉
+		close.css('display','block');
+	}
+	//绘制历史子图
+	var subHistoryRePaint = function(root) {
+		if (root == null) 
+			return null;
+		else if (root.edgeNum == null)
+			return root;
+		else {
+			for (var i = 0; i < root.edgeNum; i++) {
+				root.paintHistoryCurve(root.children[i],i,root.children[i].y);
+				subHistoryRePaint(root.children[i]);
+			}
+		}
+	}
+	//关闭历史思维导图---即重绘当前工作思维导图
+	close.click(function() {
+		rePaint();
+		console.log(nodeList);
+		close.css('display','none');
+	})
+
+//用户登录系统
+	var login = $('#login');
+	var loginModel = $('.login');
+	var register = $('#register');
+	var registerModel = $('.register');
+	var logout = $('#logout');
+	var my = $('#my');
+	var myModel = $('.myModel');
+	var shadow = $('.shadow');
+
+	//登录按钮
+	login.click(function() {
+		loginModel.css('display','block');
+		registerModel.css('display','none');
+		shadow.css('display','block');
+		document.onkeydown=function(event){
+		    var e = event || window.event || arguments.callee.caller.arguments[0];
+		    if(e && e.keyCode==13){
+		    	loginFunc();
+		    }
+		}
+	})	
+	//注册按钮
+	register.click(function() {
+		registerModel.css('display','block');
+		loginModel.css('display','none');
+		shadow.css('display','block');
+	})
+	//点击模态框外空间隐藏模态框
+	shadow.click(function() {
+		loginModel.css('display','none');
+		registerModel.css('display','none');
+		shadow.css('display','none');
+	})
+	shadow2.click(function() {
+		myProjectModel.css('display','none');
+		myBranchModel.css('display','none');
+		mySubmitsModel.css('display','none');
+		shadow2.css('display','none');
+	})
+	//登录提交按钮
+	var loginSubmit = $('#loginSubmit');
+	loginSubmit.click(function() {
+		loginFunc();
+	})
+	var loginFunc = function() {
+		var username = $('#form-first-name').val();
+		var password = $('#form-last-name').val();
+		$.ajax({
+			type: 'POST',
+			url: '/login',
+			data: {
+				'username': username,
+				'password': password
+			},
+			crossDomain: true,
+			xhrFields: {
+				withCredentials: true
+			},
+			dataType: 'json',
+			success: function(data) {
+				login.css('display','none');
+				register.css('display','none');
+				logout.css('display','block');
+				my.css('display','block');
+				my.html(data.data[0].username);
+				loginModel.css('display','none');
+				shadow.css('display','none');
+			},
+			error: function(XMLHttpRequest, textStatus, errorThrown) {
+				//location.href = 'error.html';
+			}
+		})
+	}
+	//注册提交按钮
+	var registerSubimt = $('#registerSubimt');
+	registerSubimt.click(function() {
+		var username = $('#form-first-name2').val();
+		var password = $('#form-last-name1').val();
+		var repeatPassword = $('#form-last-name2').val();
+		$.ajax({
+			type: 'POST',
+			url: '',
+			data: {
+				username: username,
+				password: password,
+				repeatPassword: repeatPassword
+			},
+			dataType: 'json',
+			success: function(data) {
+
+			},
+			error: function(XMLHttpRequest, textStatus, errorThrown) {
+				//location.href = 'error.html';
+			}
+		})
+	})
+	//登出
+	var logout = $('#logout');
+	logout.click(function() {
 
 //以下为固定位置的按钮函数
 	//后退按钮

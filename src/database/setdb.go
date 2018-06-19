@@ -18,6 +18,9 @@ func main() {
 	}
 	db := session.DB(config.DB_NAME)
 
+	// drop database
+	db.DropDatabase()
+
 	// create collection user
 	c := db.C(config.USER_CNAME)
 	err = c.Insert(&model.User{
@@ -25,20 +28,6 @@ func main() {
 		Username:	"admin",
 		Password:	"admin",
 		State:		1,
-	})
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// create collection team
-	c = db.C(config.TEAM_CNAME)
-	err = c.Insert(&model.Team{
-		Id:			0,
-		Name:		"admin",
-		AdminId:	0,
-		MemberIds:	[]int{},
-		State:		1,
-		TeamTreeIds:[]int{},
 	})
 	if err != nil {
 		log.Fatal(err)
