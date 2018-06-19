@@ -73,11 +73,13 @@ func (mindMapper *MindMapperTree)ApplyDiff(diff *MapperDiff) MindMapperTree {
 			father := res.Tree[v.Node.Father]
 			father.EdgeNum++
 			v.Node.Rank = father.EdgeNum
+			v.Node.EdgeNum = 0
 			// prebro
 			v.Node.PreBro = -1
 			for _,v1 := range res.Tree {
 				if v1.Father == father.Idx && v1.Rank == v.Node.Rank - 1 {
 					v.Node.PreBro,_ = strconv.Atoi(v1.Idx)
+					break
 				}
 			}
 			res.Tree[father.Idx] = father
@@ -86,6 +88,21 @@ func (mindMapper *MindMapperTree)ApplyDiff(diff *MapperDiff) MindMapperTree {
 			res.Tree[v.Node.Idx] = v.Node
 		case Delete:
 			delete(res.Tree, v.Node.Idx)
+			father := res.Tree[v.Node.Father]
+			father.EdgeNum--
+			res.Tree[father.Idx] = father
+			for k,v1 := range res.Tree {
+				if v1.Father == father.Idx {
+					if v1.Rank > v.Node.Rank {
+						v1.Rank--
+						res.Tree[k] = v1
+					}
+					if v1.Rank == v.Node.Rank + 1 {
+						v1.PreBro = v.Node.PreBro
+						res.Tree[k] = v1
+					}
+				}
+			}
 		default:
 		}
 	}
