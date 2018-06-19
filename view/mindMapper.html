@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <script src="js/jquery.min.js"></script>
 	<script src="js/raphael.js"></script>
+    <script src="js/html2canvas.js"></script>
+    <script src="js/canvg.js"></script>
+    <script src="js/jspdf.debug.js"></script>
 	<title>思维导图</title>
 	<link rel="stylesheet" href="css/main.css">
 	<link rel="stylesheet" href="css/form-elements.css">
@@ -27,6 +30,7 @@
 	<img class="op" src="img/right.svg" width="24" id="forward">
 	<img class="op" src="img/form.svg" width="24" id="save">
 	<img class="op" src="img/apps.svg" width="24" id="history">
+    <img class="op" src="img/save.svg" width="24" id="download">
 	
 	<!--登录弹窗-->
 	<div class="form-box modalBox login" hidden="hidden">
@@ -652,6 +656,61 @@
 	}
 
 //以下为固定位置的按钮函数
+    var download = $("#download");
+    download.click(function() {
+        // 删除所有class == plus
+        $(".plus").remove();
+        // 对svg的处理
+        var nodesToRecover = [];
+        var nodesToRemove = [];
+        var svgElem = $("body").find('svg');
+        svgElem.each(function(index, node) {
+            var parentNode = node.parentNode;
+            var svg = node.outerHTML.trim();
+            var canvas = document.createElement('canvas');
+            canvg(canvas, svg);
+            if (node.style.position) {
+                canvas.style.position += node.style.position;
+                canvas.style.left += node.style.left;
+                canvas.style.top += node.style.top;
+            }
+            nodesToRecover.push({
+                parent: parentNode,
+                child: node
+            });
+            parentNode.removeChild(node);
+            nodesToRemove.push({
+                parent: parentNode,
+                child: canvas
+            });
+            parentNode.appendChild(canvas);
+        });
+        // 导出pdf
+        html2canvas(document.querySelector('body'), {
+            background: "#fff"
+        }).then(canvas => {
+            var imgData = canvas.toDataURL('image/jpeg');
+            var img = new Image();
+            img.src = imgData;
+            //根据图片的尺寸设置pdf的规格，要在图片加载成功时执行，之所以要*0.225是因为比例问题
+            img.onload = function() {
+                //此处需要注意，pdf横置和竖置两个属性，需要根据宽高的比例来调整，不然会出现显示不完全的问题
+                if (this.width > this.height) {
+                    var doc = new jsPDF('l', 'mm', [this.width * 0.225, this.height * 0.225]);
+                } else {
+                    var doc = new jsPDF('p', 'mm', [this.width * 0.225, this.height * 0.225]);
+                }
+                doc.addImage(imgData, 'jpeg', 0, 0, this.width * 0.225, this.height * 0.225);
+                //根据下载保存成不同的文件名
+                doc.save('mindmapper_' + new Date().getTime() + '.pdf');
+            }
+            // 删除canvas
+            document.querySelector("canvas").remove();
+            //重绘
+            raphael = new Raphael(10, 80, document.body.scrollWidth, 5000);
+            printGraph();
+        });
+    });
 	//后退按钮
 	var back = $('#back');
 	back.click(function() {
