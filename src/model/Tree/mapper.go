@@ -19,7 +19,7 @@ type TreeNode struct {
 	Idx		string 	`json:"idx"`
 	Father	string 	`json:"father"`
 	EdgeNum int		`json:"edgeNum"`
-	Rank	string 	`json:"rank"`
+	Rank	int 	`json:"rank"`
 	PreBro	int		`json:"preBro"`
 	Value 	string 	`json:"value"`
 }
@@ -68,9 +68,17 @@ func (mindMapper *MindMapperTree)ApplyDiff(diff *MapperDiff) MindMapperTree {
 	for _,v := range diff.Nodes {
 		switch v.Operate {
 		case Add:
+			// father
 			father := res.Tree[v.Node.Father]
 			father.EdgeNum++
-			v.Node.Rank = strconv.Itoa(father.EdgeNum)
+			v.Node.Rank = father.EdgeNum
+			// prebro
+			v.Node.PreBro = -1
+			for _,v1 := range res.Tree {
+				if v1.Father == father.Idx && v1.Rank == v.Node.Rank - 1 {
+					v.Node.PreBro,_ = strconv.Atoi(v1.Idx)
+				}
+			}
 			res.Tree[father.Idx] = father
 			res.Tree[v.Node.Idx] = v.Node
 		case Modify:
