@@ -710,7 +710,7 @@
 					type: 'POST',
 					url: '/commit',
 					data: {
-						'bid': currentBranchID,
+						'id': currentBranchID,
 						'tree': treeString,
 						'title': title,
 					},
@@ -735,8 +735,9 @@
 			saveNode = {
 				idx: "" + nodeList[i].index,
 				father: "" + (nodeList[i].parent==null?-1:nodeList[i].parent.index),
-				rank: "" + nodeList[i].rank,
+				rank: nodeList[i].rank,
 				edgeNum: nodeList[i].edgeNum,
+				preBro: nodeList[i].prebro == null?-1:nodeList[i].prebro.index,
 				value: 'null'
 			}
 			tree.push(saveNode);
@@ -843,35 +844,58 @@
 				success: function(data) {
 					console.log('提交信息');
 					console.log(data);
+					var len = data.data[0].length;
 					submitData = data.data[0];
-					currentSubmitID = data.data[0][0].id;
+					currentSubmitID = data.data[0][len-1].id;
 					var html = '';
 					for (var i = 0; i < data.data[0].length; i++) {
 						html += '<div class="record"><div class="left">'+data.data[0][i].time+'</div><div class="left">'+data.data[0][i].title+'</div><div class="right">'+data.data[0][i].submitter+'</div><div class="clearfix"></div></div>';
 					}
 					mySubmitsList.html(html);
 					recordHandler();
+					$.ajax({
+						type: 'GET',
+						url: '/commit',
+						data: {'id': currentSubmitID},
+						dataType: 'json',
+						success: function(data) {
+							console.log('提交数据');
+							console.log(data);
+							var tree = data.data[0].tree.tree;
+							var diff = data.data[0].diff;
+							convertTreeToModelTree(tree);
+							mySubmitsModel.css('display','none');
+							shadow2.css('display','none');
+						},
+						error: function(XMLHttpRequest, textStatus, errorThrown) {
+							//location.href = 'error.html';
+						}
+					})
 				},
 				error: function(XMLHttpRequest, textStatus, errorThrown) {
 					//location.href = 'error.html';
 				}
 			})
-			$.ajax({
-				type: 'GET',
-				url: '/commit',
-				data: {'id': currentSubmitID},
-				dataType: 'json',
-				success: function(data) {
-					var tree = data.data[0].tree.tree;
-					var diff = data.data[0].diff;
-					convertTreeToModelTree(tree,diff);
-					mySubmitsModel.css('display','none');
-					shadow2.css('display','none');
-				},
-				error: function(XMLHttpRequest, textStatus, errorThrown) {
-					//location.href = 'error.html';
-				}
-			})
+		})
+	}
+	//发布功能的处理函数
+	var mergeHandler = function() {
+		$.ajax({
+			type: 'POST',
+			url: '/merge',
+			data: {'pid': currentTreeId,
+					'bid': currentBranchID},
+			dataType: 'json',
+			success: function(data) {
+				var tree = data.data[0].tree.tree;
+				var diff = data.data[0].diff;
+				convertTreeToModelTree(tree,diff);
+				mySubmitsModel.css('display','none');
+				shadow2.css('display','none');
+			},
+			error: function(XMLHttpRequest, textStatus, errorThrown) {
+				//location.href = 'error.html';
+			}
 		})
 	}
 	//点击查看获取该分支的提交列表
@@ -932,6 +956,8 @@
 				data: {'id': currentSubmitID},
 				dataType: 'json',
 				success: function(data) {
+					console.log('树及差异');
+					console.log(data);
 					var tree = data.data[0].tree.tree;
 					var diff = data.data[0].diff;
 					convertTreeToHistoryModelTree(tree,diff);
@@ -1010,47 +1036,43 @@
 		}
 	})
 	//将从后台拉取的数组转换成模型树--用于编辑模型
-	var convertTreeToModelTree = function(tree,diff) {
-		nodeList = [];
-		var Root = new node(null);
-		nodeList.push(Root);
-		for (var i = 0; i < tree.length; i++) {
+	var convertTreeToModelTree = function(tree) {
+		console.log(tree);
+		for (var i = 0; tree[i] != null; i++) {
 			//设置父节点
-			var myNode = new node(i==0?null:nodeList[tree[i].father]);
-			myNode.index = tree[i].idx;
-			myNode.prebro = tree[i].rank == 1?null:nodeList[tree[i].prebro];
+			var myNode = new node(i==0?null:nodeList[parseInt(tree[i].father)]);
+			myNode.index = parseInt(tree[i].idx);
 			myNode.edgeNum = tree[i].edgeNum;
 			myNode.rank = tree[i].rank;
+			myNode.prebro = tree[i].rank == 0 || 1?null:nodeList[tree[i].prebro];
 			//还需要给节点父亲设置children[x]----在calcSpace中使用
 			if (i != 0) 
-				nodeList[tree[i].father].children.push(myNode);
+				nodeList[parseInt(tree[i]).father].children.push(myNode);
 			// historyNode.text = tree[i].value;
 			nodeList.push(myNode);
 		}
-		for (var i = 0; i < diff.length; i++) 
-			nodeList[diff[i].node].diff = diff[i].operate;
 		printGraph(nodeList);
 	}
 	//将从后台拉取的数组转换成模型树--用于历史模型
 	var convertTreeToHistoryModelTree = function(tree,diff) {
 		var historyNodeList = [];
-		var historyRoot = new node(null);
-		historyNodeList.push(historyRoot);
-		for (var i = 0; i < tree.length; i++) {
+		for (var i = 0; tree[i] != null; i++) {
 			//设置父节点
-			var historyNode = new node(i==0?null:historyNodeList[tree[i].father]);
-			historyNode.index = tree[i].idx;
-			historyNode.prebro = tree[i].rank == 1?null:historyNodeList[tree[i].prebro];
+			var historyNode = new node(i==0?null:historyNodeList[parseInt(tree[i].father)]);
+			historyNode.index = parseInt(tree[i].idx);
+			historyNode.prebro = tree[i].rank == "1"?null:historyNodeList[tree[i].preBro];
 			historyNode.edgeNum = tree[i].edgeNum;
 			historyNode.rank = tree[i].rank;
 			//还需要给节点父亲设置children[x]----在calcSpace中使用
 			if (i != 0) 
-				historyNodeList[tree[i].father].children.push(historyNode);
+				historyNodeList[parseInt(tree[i].father)].children.push(historyNode);
 			// historyNode.text = tree[i].value;
 			historyNodeList.push(historyNode);
 		}
-		for (var i = 0; i < diff.length; i++) 
-			historyNodeList[diff[i].node].diff = diff[i].operate;
+		console.log('diff');
+		console.log(diff);
+		for (var i = 0; diff.nodes[i] != null; i++) 
+			historyNodeList[diff.nodes[i].node.idx].diff = diff.nodes[i].operate;
 		printHistoryGraph(historyNodeList);
 	}
 	//绘制历史思维导图
@@ -1104,6 +1126,9 @@
 	login.click(function() {
 		loginModel.css('display','block');
 		registerModel.css('display','none');
+		myBranchModel.css('display','none');
+		mySubmitsModel.css('display','none');
+		myProjectModel.css('display','none');
 		shadow.css('display','block');
 		document.onkeydown=function(event){
 		    var e = event || window.event || arguments.callee.caller.arguments[0];
@@ -1116,6 +1141,9 @@
 	register.click(function() {
 		registerModel.css('display','block');
 		loginModel.css('display','none');
+		myBranchModel.css('display','none');
+		mySubmitsModel.css('display','none');
+		myProjectModel.css('display','none');
 		shadow.css('display','block');
 	})
 	//点击模态框外空间隐藏模态框
