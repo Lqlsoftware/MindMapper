@@ -798,7 +798,7 @@
 				rank: nodeList[i].rank,
 				edgeNum: nodeList[i].edgeNum,
 				preBro: nodeList[i].prebro == null?-1:nodeList[i].prebro.index,
-				value: 'null'
+				value: ""
 			}
 			tree.push(saveNode);
 		}
@@ -881,6 +881,7 @@
 				mainBranchList.html(html);
 				getSubmits();
 				editHandler();
+				mergeHandler();
 			},
 			error: function(XMLHttpRequest, textStatus, errorThrown) {
 				//location.href = 'error.html';
@@ -940,22 +941,29 @@
 	}
 	//发布功能的处理函数
 	var mergeHandler = function() {
-		$.ajax({
-			type: 'POST',
-			url: '/merge',
-			data: {'pid': currentTreeId,
-					'bid': currentBranchID},
-			dataType: 'json',
-			success: function(data) {
-				var tree = data.data[0].tree.tree;
-				var diff = data.data[0].diff;
-				convertTreeToModelTree(tree,diff);
-				mySubmitsModel.css('display','none');
-				shadow2.css('display','none');
-			},
-			error: function(XMLHttpRequest, textStatus, errorThrown) {
-				//location.href = 'error.html';
-			}
+		var merge = $('.merge');
+		merge.click(function() {
+			//获取当前分支id
+			var index = merge.index(this);
+			console.log(index);
+			console.log(branchData);
+			currentBranchID = branchData[1][index].id;
+			console.log(currentTreeId);
+			console.log(currentBranchID);
+			$.ajax({
+				type: 'POST',
+				url: '/merge',
+				data: {'pid': currentTreeId,
+						'bid': currentBranchID},
+				dataType: 'json',
+				success: function(data) {
+					console.log('sucess!!!!!!');
+					console.log(data);
+				},
+				error: function(XMLHttpRequest, textStatus, errorThrown) {
+					//location.href = 'error.html';
+				}
+			})
 		})
 	}
 	//点击查看获取该分支的提交列表
