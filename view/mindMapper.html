@@ -829,6 +829,8 @@
 					success: function(data) {
 						console.log('上传返回的数据');
 						console.log(data);
+
+                        alert('Commit success!')
 					},
 					error: function(XMLHttpRequest, textStatus, errorThrown) {
 						//location.href = 'error.html';
@@ -1044,6 +1046,7 @@
 					console.log(data);
 					if (data.code == 1) {
                         console.log('auto merge sucess!!!!!!');
+                        alert('Merge to master success!')
 					} else if (data.code == 2) {
                         console.log('need fix');
                         // 处理冲突
@@ -1411,8 +1414,8 @@
 			}
 			if (diff[i].operate == 3) {
 				for (var j = 0; j < historyNodeList.length; j++) {
-					if (historyNodeList[j].index == parseInt(diff[i].node.idx))
-						historyNodeList[j].text += '=>'+diff[i].node.value;
+					if (historyNodeList[j].index === parseInt(diff[i].node.idx))
+						historyNodeList[j].text += '>>>'+diff[i].node.value;
 				}
 			}
 		}
