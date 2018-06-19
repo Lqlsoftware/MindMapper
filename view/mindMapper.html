@@ -289,7 +289,7 @@
 			this.edge[index].click(active);
 			newNode.setNode(x4,y2);
 			newNode.putText(newNode.text,len);
-			$('input').eq(newNode.index).val(newNode.text);
+			$('.text').eq(newNode.index).val(newNode.text);
 		}
 		//历史纪录绘制,因为历史记录是不可修改的
 		this.paintHistoryCurve = function(newNode,index,y2) {
@@ -317,7 +317,7 @@
 			}
 			newNode.setHistoryNode(x4,y2);
 			newNode.putText(newNode.text,len);
-			$('input').eq(newNode.index).val(newNode.text);
+			$('.text').eq(newNode.index).val(newNode.text);
 		}
 
 		//放置input
@@ -564,7 +564,7 @@
 		//清空画布
 		raphael.clear();
 		$('.plus').remove();
-		$('input').remove();
+		$('.text').remove();
 		//初始化绘制
 		raphael.path('M40,400 L120,400').attr('stroke','#abc');
 		nodeList[0].setNode(120,470);
@@ -585,11 +585,11 @@
 		//清空画布
 		raphael.clear();
 		$('.plus').remove();
-		$('input').remove();
+		$('.text').remove();
 		//初始化绘制
 		raphael.path('M40,400 L120,400').attr('stroke','#abc');
 		nodeList[0].setNode(120,470);
-		console.log(historyNodeList);
+		console.log(nodeList);
 		calcSpace(nodeList[0]);
 		updateLocation(nodeList[0]);
 		//绘制非根节点
@@ -1058,7 +1058,7 @@
 		//清空画布
 		raphael.clear();
 		$('.plus').remove();
-		$('input').remove();
+		$('.text').remove();
 		//初始化绘制
 		raphael.path('M40,400 L120,400').attr('stroke','#abc');
 		historyNodeList[0].setHistoryNode(120,470);
