@@ -1159,7 +1159,7 @@
 			myNode.index = parseInt(tree[i].idx);
 			myNode.edgeNum = tree[i].edgeNum;
 			myNode.rank = tree[i].rank;
-			myNode.prebro = tree[i].rank == 0 || 1?null:broNode;
+			myNode.prebro = tree[i].rank == 1?null:broNode;
 			//还需要给节点父亲设置children[x]----在calcSpace中使用
 			if (i != 0) 
 				fatherNode.children.push(myNode);
