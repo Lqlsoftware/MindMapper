@@ -673,7 +673,21 @@
 					logout.css('display','block');
 					my.css('display','block');
 					my.html(data.data[0].username);
-				}
+                    projectsEntranceHandler();
+				} else {
+                    loginModel.css('display','block');
+                    registerModel.css('display','none');
+                    myBranchModel.css('display','none');
+                    mySubmitsModel.css('display','none');
+                    myProjectModel.css('display','none');
+                    shadow.css('display','block');
+                    document.onkeydown=function(event){
+                        var e = event || window.event || arguments.callee.caller.arguments[0];
+                        if(e && e.keyCode==13){
+                            loginFunc();
+                        }
+                    }
+                }
 			},
 			error: function(XMLHttpRequest, textStatus, errorThrown) {
 				//location.href = 'error.html';
@@ -1531,14 +1545,23 @@
             dataType: 'json',
             success: function(data) {
                 registerModel.css('display','none');
-                myBranchModel.css('display','none');
-                mySubmitsModel.css('display','none');
-                myProjectModel.css('display','none');
                 shadow.css('display','none');
                 login.css('display','block');
                 register.css('display','block');
                 logout.css('display','none');
                 my.css('display','none');
+                loginModel.css('display','block');
+                registerModel.css('display','none');
+                myBranchModel.css('display','none');
+                mySubmitsModel.css('display','none');
+                myProjectModel.css('display','none');
+                shadow.css('display','block');
+                document.onkeydown=function(event){
+                    var e = event || window.event || arguments.callee.caller.arguments[0];
+                    if(e && e.keyCode==13){
+                        loginFunc();
+                    }
+                }
             },
             error: function(XMLHttpRequest, textStatus, errorThrown) {
                 //location.href = 'error.html';
@@ -1594,6 +1617,7 @@
 				my.html(data.data[0].username);
 				loginModel.css('display','none');
 				shadow.css('display','none');
+                projectsEntranceHandler();
 			},
 			error: function(XMLHttpRequest, textStatus, errorThrown) {
 				//location.href = 'error.html';

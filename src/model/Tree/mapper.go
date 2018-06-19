@@ -124,7 +124,7 @@ func (mindMapper *MindMapperTree)DelChild(idx string) {
 	node := mindMapper.Tree[idx]
 	delete(mindMapper.Tree, idx)
 	for k,v1 := range mindMapper.Tree {
-		if v1.Father == node.Father {
+		if v1.Father == node.Idx {
 			mindMapper.DelChild(k)
 		}
 	}
