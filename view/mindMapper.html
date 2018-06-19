@@ -1286,8 +1286,37 @@
 		    	loginFunc();
 		    }
 		}
-	})	
-	//注册按钮
+	})
+	// 退出按钮
+    logout.click(function() {
+        logoutFunc();
+    })
+    var logoutFunc = function() {
+        $.ajax({
+            type: 'GET',
+            url: '/logout',
+            crossDomain: true,
+            xhrFields: {
+                withCredentials: true
+            },
+            dataType: 'json',
+            success: function(data) {
+                registerModel.css('display','none');
+                myBranchModel.css('display','none');
+                mySubmitsModel.css('display','none');
+                myProjectModel.css('display','none');
+                shadow.css('display','none');
+                login.css('display','block');
+                register.css('display','block');
+                logout.css('display','none');
+                my.css('display','none');
+            },
+            error: function(XMLHttpRequest, textStatus, errorThrown) {
+                //location.href = 'error.html';
+            }
+        })
+    }
+    //注册按钮
 	register.click(function() {
 		registerModel.css('display','block');
 		loginModel.css('display','none');

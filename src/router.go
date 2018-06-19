@@ -7,6 +7,7 @@ import (
 
 func bindRouter() {
 	beego.Router("/login", &(handler.LoginController{}))
+	beego.Router("/logout", &(handler.LogoutController{}))
 	beego.Router("/user", &(handler.UserController{}))
 	beego.Router("/project", &(handler.ProjectController{}))
 	beego.Router("/projectMember", &(handler.ProjectMemberController{}))

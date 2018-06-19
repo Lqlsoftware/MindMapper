@@ -57,7 +57,7 @@ func NewBranch(pid int, name string, user model.User) Branch {
 	return branch
 }
 
-func (branch *Branch)MergeWith(other *Branch) (*Commit, *Conflict, error) {
+func (branch *Branch)MergeWith(other *Branch, user model.User) (*Commit, *Conflict, error) {
 	// 获取 Head Commit
 	masterHead, err := LoadCommit(branch.HeadId)
 	if err != nil {
@@ -73,7 +73,7 @@ func (branch *Branch)MergeWith(other *Branch) (*Commit, *Conflict, error) {
 
 
 	// 三路合并
-	commit, conflict := Merge(&masterHead, &branchHead, &base)
+	commit, conflict := Merge(&masterHead, &branchHead, &base, user)
 	if commit == nil {
 		return nil, conflict, nil
 	}

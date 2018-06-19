@@ -17,7 +17,7 @@ type MergerController struct {
 }
 
 func (this *MergerController) Post() {
-	_, err := this.GetUser()
+	user, err := this.GetUser()
 	if err != nil {
 		this.Ctx.WriteString(utils.GetJsonResult("Not Login", -1, nil))
 		return
@@ -29,7 +29,7 @@ func (this *MergerController) Post() {
 	project := git.GetBranchSet(pid)
 	branch := git.GetBranch(bid)
 	master := git.GetBranch(project.MainBranchId)
-	commit, conflict, err := master.MergeWith(&branch)
+	commit, conflict, err := master.MergeWith(&branch, user)
 	if err != nil {
 		this.Ctx.WriteString(utils.GetJsonResult("err occur", -2, nil))
 		return

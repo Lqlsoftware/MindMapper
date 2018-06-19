@@ -46,7 +46,7 @@ type Conflict struct {
 }
 
 // 三路合并算法
-func Merge(dst, src, base *Commit) (*Commit, *Conflict) {
+func Merge(dst, src, base *Commit, user model.User) (*Commit, *Conflict) {
 	dstDiff := dst.Tree.DiffWith(&base.Tree)
 	srcDiff := src.Tree.DiffWith(&base.Tree)
 
@@ -121,6 +121,7 @@ func Merge(dst, src, base *Commit) (*Commit, *Conflict) {
 		Title: "merge from '" + src.Title + "'",
 		Summary: "",
 		Tree: resTree,
+		Submitter: user.Username,
 	}
 	commit.Save()
 	return &commit, nil
