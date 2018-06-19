@@ -1240,7 +1240,7 @@
 		nodeList = [];
 		var fatherNode;
 		var broNode;
-		for (var i = 0; tree[i] != null; i++) {
+		$.each(tree,function(i,value) {
 			//设置父节点
 			for (var j = 0; j < nodeList.length; j++) {
 				if (nodeList[j].index == parseInt(tree[i].father))
@@ -1259,7 +1259,7 @@
 				fatherNode.children.push(myNode);
 			// historyNode.text = tree[i].value;
 			nodeList.push(myNode);
-		}
+		})
 		//更新globalIndex
 		globalIndex = 1;
 		if (nodeList != null)
@@ -1274,7 +1274,7 @@
 		var fatherNode;
 		var broNode;
 		var diffNode;
-		for (var i = 0; tree[i] != null; i++) {
+		$.each(tree,function(i,value) {
 			//设置父节点
 			for (var j = 0; j < historyNodeList.length; j++) {
 				if (historyNodeList[j].index == parseInt(tree[i].father))
@@ -1293,7 +1293,27 @@
 				fatherNode.children.push(historyNode);
 			// historyNode.text = tree[i].value;
 			historyNodeList.push(historyNode);
-		}
+		})
+		// for (var i = 0; tree[i] != null; i++) {
+		// 	//设置父节点
+		// 	for (var j = 0; j < historyNodeList.length; j++) {
+		// 		if (historyNodeList[j].index == parseInt(tree[i].father))
+		// 			fatherNode = historyNodeList[j];
+		// 		if (historyNodeList[j].index == tree[i].preBro)
+		// 			broNode = historyNodeList[j];
+		// 	}
+		// 	var historyNode = new node(i==0?null:fatherNode);
+		// 	historyNode.index = parseInt(tree[i].idx);
+		// 	historyNode.prebro = tree[i].rank == "1"?null:broNode;
+		// 	historyNode.edgeNum = tree[i].edgeNum;
+		// 	historyNode.rank = tree[i].rank;
+		// 	historyNode.text = tree[i].value;
+		// 	//还需要给节点父亲设置children[x]----在calcSpace中使用
+		// 	if (i != 0) 
+		// 		fatherNode.children.push(historyNode);
+		// 	// historyNode.text = tree[i].value;
+		// 	historyNodeList.push(historyNode);
+		// }
 		console.log('diff');
 		console.log(diff);
 		//在树中插入删除的节点,用户展现出差异图
@@ -1365,7 +1385,7 @@
 		var fatherNode;
 		var broNode;
 		var diffNode;
-		for (var i = 0; tree[i] != null; i++) {
+		$.each(tree,function(i,value) {
 			//设置父节点
 			for (var j = 0; j < historyNodeList.length; j++) {
 				if (historyNodeList[j].index == parseInt(tree[i].father))
@@ -1384,7 +1404,7 @@
 				fatherNode.children.push(historyNode);
 			// historyNode.text = tree[i].value;
 			historyNodeList.push(historyNode);
-		}
+		})
 		console.log('diff');
 		console.log(diff);
 		//在树中插入删除的节点,用户展现出差异图
