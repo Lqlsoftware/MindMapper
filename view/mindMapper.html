@@ -164,7 +164,7 @@
 		this.edge = [];
 		this.edgeNum = 0;
 		//节点文字
-		this.text = null;
+		this.text = "";
 		//节点在子树中的位置
 		this.rank = 0;
 		//节点的修改状态，仅用于历史图像绘制0-不变，1-增加，2-删除
@@ -212,6 +212,7 @@
 			//创建新的孩子并添加到节点集中
 			var newNode = new node(this);
 			newNode.setIndex(globalIndex);
+			console.log('newNodeIndex: '+globalIndex);
 			console.log('addChild '+newNode.index);
 			nodeList.push(newNode);
 			this.children.push(newNode);
@@ -278,7 +279,7 @@
 		//绘制曲线，输出文字
 		this.paintCurve = function(newNode,index,y2) {
 			//获取文字所占长度
-			if (this.children[index].text != null)
+			if (this.children[index].text != "")
 				var len = this.children[index].text.length;
 			else len = 0;
 			//绘制曲线
@@ -297,7 +298,6 @@
 			this.edge[index].click(active);
 			newNode.setNode(x4,y2);
 			newNode.putText(newNode.text,len);
-			$('.text').eq(newNode.index).val(newNode.text);
 		}
 		//历史纪录绘制,因为历史记录是不可修改的
 		this.paintHistoryCurve = function(newNode,index,y2) {
@@ -339,7 +339,7 @@
 				width = len * 15;
 				x = this.x - width;
 			}
-			$('body').append('<input class="text" style="left:'+x+'px;top:'+y+'px;width:'+width+'px;" placeholder="text" onblur="getText('+this.index+')" value="'+content+'">');
+			$('body').append('<input class="text" id="'+this.index+'" style="left:'+x+'px;top:'+y+'px;width:'+width+'px;" placeholder="text" onblur="getText('+this.index+')" value="'+content+'">');
 			// $('body').append('<input id="'+this.index+'" class="text" style="left:'+x+'px;top:'+y+'px;width:'+width+'px;" placeholder="text" onblur="getText('+this.index+')" value="'+content+'">');
 		}
 	}
@@ -584,7 +584,7 @@
 	//打印计算结果，用于测试
 	var print = function() {
 		for (var i = 0; i < nodeList.length; i++) {
-			console.log('index: '+nodeList[i].index+'  depth: '+nodeList[i].depth+'  上限：'+nodeList[i].up+'  下限: '+nodeList[i].down+'  纵坐标: '+nodeList[i].y+'  内容: '+nodeList[i].text);
+			console.log('index: '+nodeList[i].index+'  上限：'+nodeList[i].up+'  下限: '+nodeList[i].down+'  纵坐标: '+nodeList[i].y+'  内容: '+nodeList[i].text);
 		}
 		console.log("");
 	}
@@ -654,8 +654,16 @@
 
 	//完成增删改后进行修改
 	getText = function(index) {
+		console.log('节点下标：'+index);
+		var textNode;
 		var text = $('#'+index).val();
-		nodeList[index].setText(text);
+		console.log(text);
+		for (var i = 0; i < nodeList.length; i++) 
+			if (nodeList[i].index == index) {
+				textNode = nodeList[i];
+				break;
+			}
+		textNode.text = text;
 		rePaint();
 	}
 
@@ -804,7 +812,7 @@
 				rank: nodeList[i].rank,
 				edgeNum: nodeList[i].edgeNum,
 				preBro: nodeList[i].prebro == null?-1:nodeList[i].prebro.index,
-				value: ""
+				value: nodeList[i].text
 			}
 			tree.push(saveNode);
 		}
@@ -1160,12 +1168,19 @@
 			myNode.edgeNum = tree[i].edgeNum;
 			myNode.rank = tree[i].rank;
 			myNode.prebro = tree[i].rank == 1?null:broNode;
+			myNode.text = tree[i].value;
 			//还需要给节点父亲设置children[x]----在calcSpace中使用
 			if (i != 0) 
 				fatherNode.children.push(myNode);
 			// historyNode.text = tree[i].value;
 			nodeList.push(myNode);
 		}
+		//更新globalIndex
+		globalIndex = 1;
+		if (nodeList != null)
+			for (var i = 0; i < nodeList.length; i++) 
+				if (nodeList[i].index >= globalIndex)
+					globalIndex = nodeList[i].index + 1;
 		printGraph(nodeList);
 	}
 	//将从后台拉取的数组转换成模型树--用于历史模型
@@ -1187,6 +1202,7 @@
 			historyNode.prebro = tree[i].rank == "1"?null:broNode;
 			historyNode.edgeNum = tree[i].edgeNum;
 			historyNode.rank = tree[i].rank;
+			historyNode.text = tree[i].value;
 			//还需要给节点父亲设置children[x]----在calcSpace中使用
 			if (i != 0) 
 				fatherNode.children.push(historyNode);
@@ -1210,6 +1226,7 @@
 				historyNode.prebro = diff.nodes[i].node.rank == "1"?null:broNode;
 				historyNode.edgeNum = diff.nodes[i].node.edgeNum;
 				historyNode.rank = diff.nodes[i].node.rank;
+				historyNode.text = diff.nodes[i].node.value;
 				fatherNode.edgeNum++;
 				//还需要给节点父亲设置children[x]----在calcSpace中使用
 				fatherNode.children.push(historyNode);
