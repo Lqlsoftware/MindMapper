@@ -607,7 +607,7 @@
 		var width = document.body.scrollWidth;
 		$('.shadow').css('width',width);
 		$('.shadow2').css('width',width);
-		raphael = new Raphael(10,80,width,5000);
+		raphael = new Raphael(10,80,width,2000);
 		// raphael.path('M40,400 L120,400').attr('stroke','#abc');
 		var myRoot = new node(null);
 		myRoot.setIndex(0);
@@ -747,6 +747,8 @@
 	var currentSubmitID;
 	//提交数据
 	var submitData;
+	//临时节点
+	var tempNode;
 	///////////////////////////////////////////////////////////
 
 	//前方大量AJAX出没
@@ -1107,16 +1109,24 @@
 	var convertTreeToModelTree = function(tree) {
 		console.log(tree);
 		nodeList = [];
+		var fatherNode;
+		var broNode;
 		for (var i = 0; tree[i] != null; i++) {
 			//设置父节点
-			var myNode = new node(i==0?null:nodeList[parseInt(tree[i].father)]);
+			for (var j = 0; j < nodeList.length; j++) {
+				if (nodeList[j].index == parseInt(tree[i].father))
+					fatherNode = nodeList[j];
+				if (nodeList[j].index == tree[i].preBro)
+					broNode = nodeList[j];
+			}
+			var myNode = new node(i==0?null:fatherNode);
 			myNode.index = parseInt(tree[i].idx);
 			myNode.edgeNum = tree[i].edgeNum;
 			myNode.rank = tree[i].rank;
-			myNode.prebro = tree[i].rank == 0 || 1?null:nodeList[tree[i].prebro];
+			myNode.prebro = tree[i].rank == 0 || 1?null:broNode;
 			//还需要给节点父亲设置children[x]----在calcSpace中使用
 			if (i != 0) 
-				nodeList[parseInt(tree[i].father)].children.push(myNode);
+				fatherNode.children.push(myNode);
 			// historyNode.text = tree[i].value;
 			nodeList.push(myNode);
 		}
@@ -1125,23 +1135,58 @@
 	//将从后台拉取的数组转换成模型树--用于历史模型
 	var convertTreeToHistoryModelTree = function(tree,diff) {
 		var historyNodeList = [];
+		var fatherNode;
+		var broNode;
+		var diffNode;
 		for (var i = 0; tree[i] != null; i++) {
 			//设置父节点
-			var historyNode = new node(i==0?null:historyNodeList[parseInt(tree[i].father)]);
+			for (var j = 0; j < historyNodeList.length; j++) {
+				if (historyNodeList[j].index == parseInt(tree[i].father))
+					fatherNode = historyNodeList[j];
+				if (historyNodeList[j].index == tree[i].preBro)
+					broNode = historyNodeList[j];
+			}
+			var historyNode = new node(i==0?null:fatherNode);
 			historyNode.index = parseInt(tree[i].idx);
-			historyNode.prebro = tree[i].rank == "1"?null:historyNodeList[tree[i].preBro];
+			historyNode.prebro = tree[i].rank == "1"?null:broNode;
 			historyNode.edgeNum = tree[i].edgeNum;
 			historyNode.rank = tree[i].rank;
 			//还需要给节点父亲设置children[x]----在calcSpace中使用
 			if (i != 0) 
-				historyNodeList[parseInt(tree[i].father)].children.push(historyNode);
+				fatherNode.children.push(historyNode);
 			// historyNode.text = tree[i].value;
 			historyNodeList.push(historyNode);
 		}
 		console.log('diff');
 		console.log(diff);
-		for (var i = 0; diff.nodes[i] != null; i++) 
-			historyNodeList[diff.nodes[i].node.idx].diff = diff.nodes[i].operate;
+		//在树中插入删除的节点,用户展现出差异图
+		for (var i = 0; diff.nodes[i] != null; i++) {
+			if (diff.nodes[i].operate == 2) {
+				//设置父节点
+				for (var j = 0; j < historyNodeList.length; j++) {
+					if (historyNodeList[j].index == parseInt(diff.nodes[i].node.father))
+						fatherNode = historyNodeList[j];
+					if (historyNodeList[j].index == diff.nodes[i].node.preBro)
+						broNode = historyNodeList[j];
+				}
+				var historyNode = new node(fatherNode);
+				historyNode.index = parseInt(diff.nodes[i].node.idx);
+				historyNode.prebro = diff.nodes[i].node.rank == "1"?null:broNode;
+				historyNode.edgeNum = diff.nodes[i].node.edgeNum;
+				historyNode.rank = diff.nodes[i].node.rank;
+				fatherNode.edgeNum++;
+				//还需要给节点父亲设置children[x]----在calcSpace中使用
+				fatherNode.children.push(historyNode);
+				// historyNode.text = tree[i].value;
+				historyNodeList.push(historyNode);
+			}
+		}
+		for (var i = 0; diff.nodes[i] != null; i++) {
+			for (var j = 0; j < historyNodeList.length; j++) 
+				if (historyNodeList[j].index == diff.nodes[i].node.idx)
+					diffNode = historyNodeList[j];
+			diffNode.diff = diff.nodes[i].operate;
+		}
 		printHistoryGraph(historyNodeList);
 	}
 	//绘制历史思维导图
