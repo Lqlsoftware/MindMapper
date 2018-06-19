@@ -1043,8 +1043,8 @@
                         currentSubmitID = branchData[0].id;
                         console.log('树及差异');
                         console.log(data);
-                        var tree = data.data[0].tree.tree;
-                        var diff = data.data[0].diff;
+                        var tree = data.data[0].Tree.tree;
+                        var diff = data.data[0].Diff;
                         convertTreeToConflictModelTree(tree,diff);
 					}
 				},
