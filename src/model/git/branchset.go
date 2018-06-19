@@ -18,6 +18,20 @@ type BranchSet struct {
 	MemberIds		[]int 	`json:"memberIds"`
 }
 
+func (branchSet *BranchSet)AddUser(username string) error {
+	user := model.User{}
+	err := orm.GetDatabase().C(config.USER_CNAME).Find(bson.M{"username": username}).One(&user)
+	if err != nil {
+		return err
+	}
+
+	err = orm.GetDatabase().C(config.BRANCHSET_CNAME).Update(bson.M{"treeid": branchSet.TreeId},bson.M{"$set":bson.M{"memberids": append(branchSet.MemberIds, user.Id)}})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func GetBranchSets(userId int) []BranchSet {
 	var branchSets []BranchSet
 	err := orm.GetDatabase().C(config.BRANCHSET_CNAME).Find(bson.M{"memberids":bson.M{"$in": []int{userId}}}).All(&branchSets)

@@ -45,3 +45,34 @@ func (this *ProjectController)GetUser() (model.User, error) {
 		return user.(model.User), nil
 	}
 }
+
+type ProjectMemberController struct {
+	beego.Controller
+}
+
+func (this *ProjectMemberController) Post() {
+	//_, err := this.GetUser()
+	//if err != nil {
+	//	this.Ctx.WriteString(utils.GetJsonResult("Not Login", -1, nil))
+	//	return
+	//}
+
+	username := this.GetString("name")
+	pid,_ := this.GetInt("pid")
+	project := git.GetBranchSet(pid)
+	err := project.AddUser(username)
+	if err != nil {
+		this.Ctx.WriteString(utils.GetJsonResult("invalid username", -1, nil))
+		return
+	}
+	this.Ctx.WriteString(utils.GetJsonResult("ok", 1, nil))
+}
+
+func (this *ProjectMemberController)GetUser() (model.User, error) {
+	user := this.GetSession("user")
+	if user == nil {
+		return model.User{}, errors.New("not login")
+	} else {
+		return user.(model.User), nil
+	}
+}

@@ -32,6 +32,24 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	err = c.Insert(&model.User{
+		Id:			1,
+		Username:	"alice",
+		Password:	"123",
+		State:		1,
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = c.Insert(&model.User{
+		Id:			2,
+		Username:	"bob",
+		Password:	"123",
+		State:		1,
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	// create collection branchSet
 	c = db.C(config.BRANCHSET_CNAME)
