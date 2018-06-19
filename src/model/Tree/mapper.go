@@ -2,6 +2,10 @@ package Tree
 
 import (
 	"encoding/json"
+<<<<<<< HEAD
+=======
+	"strconv"
+>>>>>>> 14c0f24cd7e7424f35c86234e8136f314edce696
 
 	"github.com/sergi/go-diff/diffmatchpatch"
 )
@@ -18,7 +22,12 @@ type TreeNode struct {
 	Idx		string 	`json:"idx"`
 	Father	string 	`json:"father"`
 	EdgeNum int		`json:"edgeNum"`
+<<<<<<< HEAD
 	Rank	string 	`json:"rank"`
+=======
+	Rank	int 	`json:"rank"`
+	PreBro	int		`json:"preBro"`
+>>>>>>> 14c0f24cd7e7424f35c86234e8136f314edce696
 	Value 	string 	`json:"value"`
 }
 
@@ -55,7 +64,11 @@ func (mindMapper *MindMapperTree)updateHash() {
 	mindMapper.Hash = "0"
 }
 
+<<<<<<< HEAD
 func (mindMapper *MindMapperTree)ApplyDiff(diff MapperDiff) MindMapperTree {
+=======
+func (mindMapper *MindMapperTree)ApplyDiff(diff *MapperDiff) MindMapperTree {
+>>>>>>> 14c0f24cd7e7424f35c86234e8136f314edce696
 	// deep copy
 	res := MindMapperTree{map[string]TreeNode{},"6666"}
 	for k,v := range mindMapper.Tree {
@@ -65,10 +78,32 @@ func (mindMapper *MindMapperTree)ApplyDiff(diff MapperDiff) MindMapperTree {
 	// apply diff
 	for _,v := range diff.Nodes {
 		switch v.Operate {
+<<<<<<< HEAD
 		case Add, Modify:
 			res.Tree[v.Node.Idx] = v.Node
 		case Delete:
 			delete(res.Tree, v.Node.Idx)
+=======
+		case Add:
+			// father
+			father := res.Tree[v.Node.Father]
+			father.EdgeNum++
+			v.Node.Rank = father.EdgeNum
+			// prebro
+			v.Node.PreBro = -1
+			for _,v1 := range res.Tree {
+				if v1.Father == father.Idx && v1.Rank == v.Node.Rank - 1 {
+					v.Node.PreBro,_ = strconv.Atoi(v1.Idx)
+				}
+			}
+			res.Tree[father.Idx] = father
+			res.Tree[v.Node.Idx] = v.Node
+		case Modify:
+			res.Tree[v.Node.Idx] = v.Node
+		case Delete:
+			delete(res.Tree, v.Node.Idx)
+		default:
+>>>>>>> 14c0f24cd7e7424f35c86234e8136f314edce696
 		}
 	}
 	return res
