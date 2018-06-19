@@ -29,6 +29,8 @@ path {stroke-width: 4px;}
 /*输入模态框*/
 .inputModel {top: 40%}
 .inputModel2 {top: 40%}
+.inputModel3 {top: 6%}
+.inputModel3 input[type="text"] {border: 1px solid #eee; border-right: 14px; background: #eee}
 /*模态框内文字*/
 .label {margin: 0 auto;}
 .label .labelText {color: #fff; float: left; font-size: 15px; margin-left: 60px; width: 70px; margin-bottom: 20px;}
@@ -36,9 +38,15 @@ path {stroke-width: 4px;}
 	/*历史记录*/
 .record {cursor: pointer;}
 	/*团队信息查看*/
-.left {float: left; white-space: pre}
-.right {float: right;}
+.left {float: left; white-space: pre; margin-right: 10px;}
+.right {float: right; margin-left: 10px;}
 .project {cursor: pointer; margin-bottom: 8px;}
 .project img {margin-right: 10px;}
 .mainBranch {cursor: pointer;}
 .myBranch {cursor: pointer;}
+/*编辑操作*/
+.edit {cursor: pointer;}
+/*发布*/
+.merge {cursor: pointer;}
+/**/
+.searchSubmits {cursor: pointer;}
