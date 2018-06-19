@@ -14,7 +14,7 @@ type BranchController struct {
 }
 
 func (this *BranchController) Get() {
-	_, err := this.GetUser()
+	user, err := this.GetUser()
 	if err != nil {
 		this.Ctx.WriteString(utils.GetJsonResult("Not Login", -1, nil))
 		return
@@ -23,17 +23,20 @@ func (this *BranchController) Get() {
 	projectId,_ := this.GetInt("pid")
 	project := git.GetBranchSet(projectId)
 	master := git.GetBranch(project.MainBranchId)
-	var branch []git.Branch
+	var branchs []git.Branch
 	for _,v := range project.BranchIds {
 		if v != master.Id {
-			branch = append(branch, git.GetBranch(v))
+			branch := git.GetBranch(v)
+			if branch.OwnerId == user.Id {
+				branchs = append(branchs, branch)
+			}
 		}
 	}
-	this.Ctx.WriteString(utils.GetJsonResult("success", 1, master, branch))
+	this.Ctx.WriteString(utils.GetJsonResult("success", 1, master, branchs))
 }
 
 func (this *BranchController) Post() {
-	_, err := this.GetUser()
+	user, err := this.GetUser()
 	if err != nil {
 		this.Ctx.WriteString(utils.GetJsonResult("Not Login", -1, nil))
 		return
@@ -41,7 +44,7 @@ func (this *BranchController) Post() {
 
 	pid,_ := this.GetInt("pid")
 	name := this.GetString("name")
-	branch := git.NewBranch(pid, name)
+	branch := git.NewBranch(pid, name, user)
 	this.Ctx.WriteString(utils.GetJsonResult("success", 1, branch))
 }
 

@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/Lqlsoftware/mindmapper/src/config"
+	"github.com/Lqlsoftware/mindmapper/src/model"
 	"github.com/Lqlsoftware/mindmapper/src/orm"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -17,6 +18,7 @@ type Branch struct {
 	StartTime	int64	`json:"startTime"`
 	EndTime		int64	`json:"endTime"`
 	MergeIds	[]int
+	OwnerId		int		`json:"ownerId"`
 }
 
 func GetBranch(branchId int) Branch {
@@ -29,7 +31,7 @@ func GetBranch(branchId int) Branch {
 	}
 }
 
-func NewBranch(pid int, name string) Branch {
+func NewBranch(pid int, name string, user model.User) Branch {
 	project := GetBranchSet(pid)
 	master := GetBranch(project.MainBranchId)
 	branch := Branch{
@@ -40,6 +42,7 @@ func NewBranch(pid int, name string) Branch {
 		StartTime: 	time.Now().Unix(),
 		EndTime:	-1,
 		MergeIds:	[]int{master.HeadId},
+		OwnerId:	user.Id,
 	}
 
 	err := branch.Save()
