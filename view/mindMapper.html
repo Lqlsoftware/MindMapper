@@ -98,6 +98,7 @@
 		<div class="form-top">
 			<div class="form-top-left" style="width: 100%">
 				<h3 id="projectName"></h3>
+                <div style="color:#fff;cursor:pointer;display:inline-block;float:left;" id="newMember">添加成员</div>
 	    		<div style="color:#fff;cursor:pointer;display:inline-block;float:right;" id="newBranch">新建一个分支</div>
 			</div>
 	    </div>
@@ -123,6 +124,9 @@
 	<div class="modalBox inputModel3" hidden="hidden">
 		<input type="text" name="" placeholder="输入title" id="inputContent3">
 	</div>
+    <div class="modalBox inputModel4" hidden="hidden">
+        <input type="text" name="" placeholder="输入成员名" id="inputContent4">
+    </div>
 	<div><img src="img/close.png" width="40" style="float: right;cursor: pointer;" id="close" hidden="hidden"></div>
 	<div class="clearfix"></div>
 	<!--阴影-->
@@ -1073,6 +1077,38 @@
 		myBranchModel.css('display','block');
 		mySubmitsModel.css('display','none');
 	})
+	// 添加成员
+    $('#newMember').click(function() {
+        var name;
+        $('.inputModel4').css('display','block');
+        document.onkeydown=function(event){
+            var e = event || window.event || arguments.callee.caller.arguments[0];
+            if(e && e.keyCode==13){
+                name = $('#inputContent4').val();
+                if (name == '' || name == undefined || name == null) {
+                    alert('成员名不能为空');
+                    return;
+                }
+                $('.inputModel4').css('display','none');
+                $.ajax({
+                    type: 'POST',
+                    url: '/projectMember',
+                    data: {'pid': currentTreeId,'name': name},
+                    dataType: 'json',
+                    success: function(data) {
+                        if (data.code === 1) {
+                            alert('添加成功');
+						} else {
+                            alert('用户不存在');
+						}
+                    },
+                    error: function(XMLHttpRequest, textStatus, errorThrown) {
+                        //location.href = 'error.html';
+                    }
+                })
+            }
+        }
+    })
 	//新建分支
 	$('#newBranch').click(function() {
 		var name;
