@@ -19,6 +19,7 @@ type TreeNode struct {
 	Father	string 	`json:"father"`
 	EdgeNum int		`json:"edgeNum"`
 	Rank	string 	`json:"rank"`
+	PreBro	int		`json:"preBro"`
 	Value 	string 	`json:"value"`
 }
 
