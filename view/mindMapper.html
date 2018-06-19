@@ -325,6 +325,33 @@
 			}
 			newNode.setHistoryNode(x4,y2);
 			newNode.putText(newNode.text,len);
+		}
+		//可修改的历史纪录绘制,用于出现数据冲突时的处理
+		this.paintConflictCurve = function(newNode,index,y2) {
+			//获取文字所占长度
+			if (this.children[index].text != null)
+				var len = this.children[index].text.length;
+			else len = 0;
+			//绘制曲线
+			//x1,y1为起始点；x2为贝塞尔曲线横坐标中间点;x3为贝塞尔曲线横坐标终点,x4为直线横坐标终点,y2为线条终点
+			var x1 = this.x;
+			var y1 = this.y;
+			var x2 = x1 + 10;
+			var x3 = x2 + 10;
+			var	x4 = x3 + 80;
+			if (len > 5)
+				x4 = x3 + len*15;
+			if (this.children[index].diff == 1) {
+				this.edge[index] = raphael.path('M'+x1+','+eval(y1-70)+' Q'+x2+','+eval(y2-70)+' '+x3+','+eval(y2-70)+' '+'L'+x4+','+eval(y2-70)).attr({'stroke':'green','r':newNode.index,'rx':0});
+			}
+			else if (this.children[index].diff == 2) {
+				this.edge[index] = raphael.path('M'+x1+','+eval(y1-70)+' Q'+x2+','+eval(y2-70)+' '+x3+','+eval(y2-70)+' '+'L'+x4+','+eval(y2-70)).attr({'stroke':'red','r':newNode.index,'rx':0});
+			}
+			else {
+				this.edge[index] = raphael.path('M'+x1+','+eval(y1-70)+' Q'+x2+','+eval(y2-70)+' '+x3+','+eval(y2-70)+' '+'L'+x4+','+eval(y2-70)).attr({'stroke':'#ae00ae','r':newNode.index,'rx':0});
+			}
+			newNode.setNode(x4,y2);
+			newNode.putText(newNode.text,len);
 			$('.text').eq(newNode.index).val(newNode.text);
 		}
 
@@ -977,7 +1004,7 @@
                     if (data.code == 1) {
                         alert('pull sucess!');
                         console.log('pull sucess!!!!!!');
-                    }
+                    } 
                 },
                 error: function(XMLHttpRequest, textStatus, errorThrown) {
                     //location.href = 'error.html';
@@ -1018,7 +1045,7 @@
                         console.log(data);
                         var tree = data.data[0].tree.tree;
                         var diff = data.data[0].diff;
-                        convertTreeToHistoryModelTree(tree,diff);
+                        convertTreeToConflictModelTree(tree,diff);
 					}
 				},
 				error: function(XMLHttpRequest, textStatus, errorThrown) {
@@ -1316,6 +1343,95 @@
 			for (var i = 0; i < root.edgeNum; i++) {
 				root.paintHistoryCurve(root.children[i],i,root.children[i].y);
 				subHistoryRePaint(root.children[i]);
+			}
+		}
+	}
+	//将从后台拉取的数组转换成模型树--用于冲突模型
+	var convertTreeToConflictModelTree = function(tree,diff) {
+		var historyNodeList = [];
+		var fatherNode;
+		var broNode;
+		var diffNode;
+		for (var i = 0; tree[i] != null; i++) {
+			//设置父节点
+			for (var j = 0; j < historyNodeList.length; j++) {
+				if (historyNodeList[j].index == parseInt(tree[i].father))
+					fatherNode = historyNodeList[j];
+				if (historyNodeList[j].index == tree[i].preBro)
+					broNode = historyNodeList[j];
+			}
+			var historyNode = new node(i==0?null:fatherNode);
+			historyNode.index = parseInt(tree[i].idx);
+			historyNode.prebro = tree[i].rank == "1"?null:broNode;
+			historyNode.edgeNum = tree[i].edgeNum;
+			historyNode.rank = tree[i].rank;
+			historyNode.text = tree[i].value;
+			//还需要给节点父亲设置children[x]----在calcSpace中使用
+			if (i != 0) 
+				fatherNode.children.push(historyNode);
+			// historyNode.text = tree[i].value;
+			historyNodeList.push(historyNode);
+		}
+		console.log('diff');
+		console.log(diff);
+		//在树中插入删除的节点,用户展现出差异图
+		for (var i = 0; diff.nodes[i] != null; i++) {
+			if (diff.nodes[i].operate == 2) {
+				//设置父节点
+				for (var j = 0; j < historyNodeList.length; j++) {
+					if (historyNodeList[j].index == parseInt(diff.nodes[i].node.father))
+						fatherNode = historyNodeList[j];
+					if (historyNodeList[j].index == diff.nodes[i].node.preBro)
+						broNode = historyNodeList[j];
+				}
+				var historyNode = new node(fatherNode);
+				historyNode.index = parseInt(diff.nodes[i].node.idx);
+				historyNode.prebro = diff.nodes[i].node.rank == "1"?null:broNode;
+				historyNode.edgeNum = diff.nodes[i].node.edgeNum;
+				historyNode.rank = diff.nodes[i].node.rank;
+				historyNode.text = diff.nodes[i].node.value;
+				fatherNode.edgeNum++;
+				//还需要给节点父亲设置children[x]----在calcSpace中使用
+				fatherNode.children.push(historyNode);
+				// historyNode.text = tree[i].value;
+				historyNodeList.push(historyNode);
+			}
+		}
+		for (var i = 0; diff.nodes[i] != null; i++) {
+			for (var j = 0; j < historyNodeList.length; j++) 
+				if (historyNodeList[j].index == diff.nodes[i].node.idx)
+					diffNode = historyNodeList[j];
+			diffNode.diff = diff.nodes[i].operate;
+		}
+		printHistoryGraph(historyNodeList);
+	}
+	//绘制冲突思维导图
+	var printConflictGraph = function(historyNodeList) {
+		//清空画布
+		raphael.clear();
+		$('.plus').remove();
+		$('.text').remove();
+		//初始化绘制
+		raphael.path('M40,400 L120,400').attr('stroke','#abc');
+		historyNodeList[0].setHistoryNode(120,470);
+		console.log(historyNodeList);
+		calcSpace(historyNodeList[0]);
+		updateLocation(historyNodeList[0]);
+		//绘制非根节点
+		subConflictRePaint(historyNodeList[0]);
+		//显示叉叉
+		close.css('display','block');
+	}
+	//绘制冲突子图
+	var subConflictRePaint = function(root) {
+		if (root == null) 
+			return null;
+		else if (root.edgeNum == null)
+			return root;
+		else {
+			for (var i = 0; i < root.edgeNum; i++) {
+				root.paintConflictCurve(root.children[i],i,root.children[i].y);
+				subConflictRePaint(root.children[i]);
 			}
 		}
 	}
