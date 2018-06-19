@@ -66,7 +66,8 @@ func (mindMapper *MindMapperTree)ApplyDiff(diff *MapperDiff) MindMapperTree {
 	}
 
 	// apply diff
-	for _,v := range diff.Nodes {
+	for i := len(diff.Nodes) - 1;i >= 0;i-- {
+		v := diff.Nodes[i]
 		switch v.Operate {
 		case Add:
 			// father
@@ -74,6 +75,7 @@ func (mindMapper *MindMapperTree)ApplyDiff(diff *MapperDiff) MindMapperTree {
 			father.EdgeNum++
 			v.Node.Rank = father.EdgeNum
 			v.Node.EdgeNum = 0
+			res.Tree[father.Idx] = father
 			// prebro
 			v.Node.PreBro = -1
 			for _,v1 := range res.Tree {
@@ -82,12 +84,21 @@ func (mindMapper *MindMapperTree)ApplyDiff(diff *MapperDiff) MindMapperTree {
 					break
 				}
 			}
-			res.Tree[father.Idx] = father
 			res.Tree[v.Node.Idx] = v.Node
 		case Modify:
-			res.Tree[v.Node.Idx] = v.Node
+			if _,ok := res.Tree[v.Node.Idx];!ok {
+				continue
+			}
+			target := res.Tree[v.Node.Idx]
+			target.Value = v.Node.Value
+			res.Tree[v.Node.Idx] = target
 		case Delete:
-			delete(res.Tree, v.Node.Idx)
+			if _,ok := res.Tree[v.Node.Idx];!ok {
+				continue
+			}
+			// 递归删除元素
+			res.DelChild(v.Node.Idx)
+
 			father := res.Tree[v.Node.Father]
 			father.EdgeNum--
 			res.Tree[father.Idx] = father
@@ -109,6 +120,17 @@ func (mindMapper *MindMapperTree)ApplyDiff(diff *MapperDiff) MindMapperTree {
 	return res
 }
 
+func (mindMapper *MindMapperTree)DelChild(idx string) {
+	node := mindMapper.Tree[idx]
+	delete(mindMapper.Tree, idx)
+	for k,v1 := range mindMapper.Tree {
+		if v1.Father == node.Father {
+			mindMapper.DelChild(k)
+		}
+	}
+}
+
+
 func (mindMapper *MindMapperTree)DiffWith(other *MindMapperTree) MapperDiff {
 	engine := diffmatchpatch.New()
 
@@ -125,6 +147,15 @@ func (mindMapper *MindMapperTree)DiffWith(other *MindMapperTree) MapperDiff {
 	Diffs := MapperDiff{[]MapperNodeDiff{}}
 	for _, curr := range list {
 		if last, exist := other.Tree[curr.Idx]; !exist {
+			// add
+			valueDiff := engine.DiffMain("", curr.Value, true)
+			diff := MapperNodeDiff{
+				Node:      curr,
+				Operate:   Add,
+				Different: valueDiff,
+			}
+			Diffs.Nodes = append(Diffs.Nodes, diff)
+		} else if  last.Father != curr.Father {
 			// add
 			valueDiff := engine.DiffMain("", curr.Value, true)
 			diff := MapperNodeDiff{
