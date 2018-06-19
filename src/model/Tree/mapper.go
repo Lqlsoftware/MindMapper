@@ -2,6 +2,7 @@ package Tree
 
 import (
 	"encoding/json"
+	"strconv"
 
 	"github.com/sergi/go-diff/diffmatchpatch"
 )
@@ -55,7 +56,7 @@ func (mindMapper *MindMapperTree)updateHash() {
 	mindMapper.Hash = "0"
 }
 
-func (mindMapper *MindMapperTree)ApplyDiff(diff MapperDiff) MindMapperTree {
+func (mindMapper *MindMapperTree)ApplyDiff(diff *MapperDiff) MindMapperTree {
 	// deep copy
 	res := MindMapperTree{map[string]TreeNode{},"6666"}
 	for k,v := range mindMapper.Tree {
@@ -65,10 +66,17 @@ func (mindMapper *MindMapperTree)ApplyDiff(diff MapperDiff) MindMapperTree {
 	// apply diff
 	for _,v := range diff.Nodes {
 		switch v.Operate {
-		case Add, Modify:
+		case Add:
+			father := res.Tree[v.Node.Father]
+			father.EdgeNum++
+			v.Node.Rank = strconv.Itoa(father.EdgeNum)
+			res.Tree[father.Idx] = father
+			res.Tree[v.Node.Idx] = v.Node
+		case Modify:
 			res.Tree[v.Node.Idx] = v.Node
 		case Delete:
 			delete(res.Tree, v.Node.Idx)
+		default:
 		}
 	}
 	return res

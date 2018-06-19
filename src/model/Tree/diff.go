@@ -12,6 +12,7 @@ const (
 	Add			MapperNodeOperate	= 0x01
 	Delete		MapperNodeOperate	= 0x02
 	Modify		MapperNodeOperate 	= 0x03
+	Hide		MapperNodeOperate	= 0x04
 )
 
 func (operate MapperNodeOperate)String() string {
@@ -46,4 +47,16 @@ type MapperDiff struct {
 func (diffs *MapperDiff)ToJson() (string,error) {
 	res,err := json.Marshal(*diffs)
 	return string(res), err
+}
+
+func (diffs *MapperNodeDiff)Equal(diffs2 *MapperNodeDiff) bool {
+	if diffs.Node.Idx != diffs2.Node.Idx || diffs.Operate != diffs2.Operate || len(diffs.Different) != len(diffs2.Different) {
+		return false
+	}
+	for i,v := range diffs.Different {
+		if v.Text != diffs2.Different[i].Text || v.Type != diffs2.Different[i].Type {
+			return false
+		}
+	}
+	return true
 }
